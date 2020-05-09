@@ -1,0 +1,11 @@
+name: fdet
+channels:
+- pytorch
+- conda-forge
+- defaults
+dependencies:
+- python=3.5
+- pylint
+- mypy
+- pip:
+  - python-language-server
