@@ -28,8 +28,6 @@ setup(
         'Operating System :: Microsoft :: Windows :: Windows 8',
         'Operating System :: Microsoft :: Windows :: Windows 8.1',
         'Operating System :: POSIX :: Linux',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
@@ -42,6 +40,9 @@ setup(
     keywords='face recognition detection biometry',
     packages=['fdet'],
     zip_safe=False,
-    python_requires='>=3.4',
-    install_requires=[line for line in open('requirements.txt').read().split('\n') if line != '']
+    python_requires='>=3.6',
+    install_requires=[line for line in open('requirements.txt').read().split('\n') if line != ''],
+    entry_points={
+        'console_scripts': ['fdet=fdet.cli.fdet:main']
+    }
 )
