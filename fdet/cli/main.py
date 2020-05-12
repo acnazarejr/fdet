@@ -9,7 +9,6 @@ import numpy as np
 import torch
 import click
 from tqdm import tqdm
-from click_option_group import RequiredMutuallyExclusiveOptionGroup as OptionGroup
 from fdet.detector import Detector
 import fdet
 
@@ -18,27 +17,27 @@ def main():
     """main fdet cli function"""
 
 def _common_options(func):
-    option_group = OptionGroup('Input data sources', help='The sources of the input data')
     options = [
-        option_group.option(
+        click.option(
             '-i', '--image', 'image_file', multiple=True,
             help='The path of the image to detect',
             type=click.Path(exists=True, file_okay=True, dir_okay=False, writable=False,
-                            readable=True, resolve_path=True, allow_dash=False, path_type=None)
+                            readable=True, resolve_path=True, allow_dash=False, path_type=None),
+            callback=(lambda ctx, param, value: value if value else None)
         ),
-        option_group.option(
+        click.option(
             '-v', '--video', 'video_file',
             help='The path of the video input to detect',
             type=click.Path(exists=True, file_okay=True, dir_okay=False, writable=False,
                             readable=True, resolve_path=True, allow_dash=False, path_type=None)
         ),
-        option_group.option(
+        click.option(
             '-l', '--list', 'images_list',
             help='The path of a text file containing a list of images to detect',
             type=click.Path(exists=True, file_okay=True, dir_okay=False, writable=False,
                             readable=True, resolve_path=True, allow_dash=False, path_type=None)
         ),
-        option_group.option(
+        click.option(
             '-d', '--dir', 'images_dir',
             help='The path of a folder containing the images to detect',
             type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=False,
@@ -188,6 +187,26 @@ def _detect(detector: Detector, input_data, kwargs: Dict[str, Any]) -> None:
 
 
 def _process_input(kwargs) -> Iterable[Tuple[Hashable, Union[str, np.ndarray]]]:
+
+    input_options = [kwargs['image_file'], kwargs['video_file'],
+                     kwargs['images_list'], kwargs['images_dir']]
+    not_none_sum = sum(1 for _ in filter(None.__ne__, input_options))
+
+    if not_none_sum == 0:
+        error_msg = 'Missing one of the required options from input data sources:\n'
+        error_msg += "'-d' / '--dir'\n"
+        error_msg += "'-l' / '--list'\n"
+        error_msg += "'-v' / '--video'\n"
+        error_msg += "'-i' / '--image'\n"
+        raise click.UsageError(error_msg)
+
+    if not_none_sum > 1:
+        error_msg = 'The given mutually exclusive options cannot be used at the same time:\n'
+        error_msg += "'-d' / '--dir'\n"
+        error_msg += "'-l' / '--list'\n"
+        error_msg += "'-v' / '--video'\n"
+        error_msg += "'-i' / '--image'\n"
+        raise click.UsageError(error_msg)
 
     if kwargs['image_file'] is not None and kwargs['image_file']:
         return [(os.path.basename(ifile), ifile) for ifile in kwargs['image_file']]
