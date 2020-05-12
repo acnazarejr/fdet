@@ -46,6 +46,8 @@ def test_detect_batch_input(mtcnn_detector, images):
     with pytest.raises(DetectorInputError):
         mtcnn_detector.batch_detect(111)
     with pytest.raises(DetectorInputError):
+        mtcnn_detector.batch_detect([])
+    with pytest.raises(DetectorInputError):
         mtcnn_detector.batch_detect('invalid_input')
     with pytest.raises(DetectorInputError):
         mtcnn_detector.batch_detect(np.zeros((100, 100, 3)))

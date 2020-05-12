@@ -97,6 +97,8 @@ class Detector(ABC):
             raise DetectorInputError('The batch must be a Sequence or numpy array.')
 
         if isinstance(batch, Sequence):
+            if not batch:
+                raise DetectorInputError('The batch must have least one image.')
             batch = np.stack(batch)
 
 
