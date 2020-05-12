@@ -23,9 +23,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install pylint pytest
         pip install -e .
-    - name: Install PyTorch
+    - name: Install PyTorch (Linux or Windows)
       if: matrix.os == "ubuntu-latest" || matrix.os == "windows-latest"
       run: pip install torch==1.5.0+cpu torchvision==0.6.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+    - name: Install PyTorch (MacOS)
       if: matrix.os == "macos-latest"
       run: pip install torch torchvision
 
