@@ -38,7 +38,7 @@ setup(
         'Topic :: Software Development :: Libraries'
     ],
     description='The fdet is an easy to use face detection implementation based on PyTorch.',
-    long_description=open('readme.md').read(),
+    long_description=open('README.md').read(),
     long_description_content_type='text/markdown',  # This is important!
     keywords='face recognition detection biometry',
     packages=['fdet'],
