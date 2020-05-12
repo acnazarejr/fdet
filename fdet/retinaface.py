@@ -161,7 +161,7 @@ class RetinaFace(Detector):
 
         state_dict = load_state_dict_from_url(url, map_location=self._device_control)
 
-        model = _RetinaModule(backbone=backbone)
+        model = _RetinaModule(device_control=self._device_control, backbone=backbone)
         model.load_state_dict(state_dict, strict=False)
         return model
 
@@ -424,11 +424,13 @@ class _RetinaModule(torch.nn.Module):
 
     }
 
-    def __init__(self, backbone: str = 'RESNET50'):
+    def __init__(self, device_control: torch.Device, backbone: str = 'RESNET50'):
         """
         :param cfg:  Network related settings.
         """
         torch.nn.Module.__init__(self)
+
+        self._device_control = device_control
 
         config = _RetinaModule.__configs[backbone]
         backbone_model = None
