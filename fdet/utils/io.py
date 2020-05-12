@@ -40,7 +40,7 @@ class VideoHandle():
     def __len__(self) -> int:
         return self._n_frames
 
-def read_as_rgb(path: str) -> np.ndarray:
+def read_as_rgb(path: str):
     """Read an image as RGB format"""
     try:
         return cv2.cvtColor(cv2.imread(path, cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)

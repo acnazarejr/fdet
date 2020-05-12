@@ -1,12 +1,12 @@
 """The RetinaFace Detector"""
 
-from typing import Optional, List, Dict, Sequence
+from typing import Optional, List, Sequence
 from itertools import product
 import math
 import numpy as np
 import torch
-import torchvision.models._utils
 import cv2
+import torchvision.models._utils
 from torchvision.ops.boxes import batched_nms
 import torchvision.models
 from torchvision.models.utils import load_state_dict_from_url
@@ -135,7 +135,7 @@ class RetinaFace(Detector):
         batch_scores = batch_scores[keep]
 
 
-        batch_detections: List[List[Dict]] = list()
+        batch_detections = list()
         for idx in range(n_images):
 
             mask_current_image = batch_idx.eq(idx)
@@ -438,11 +438,11 @@ class _RetinaModule(torch.nn.Module):
             backbone_model = self._load_mobile_net_model()
         elif backbone == 'RESNET50':
             backbone_model = torchvision.models.resnet50(pretrained=True)
-        else:
-            raise ValueError(f'Invalid backbone option: {backbone}')
 
+        #pylint: disable=protected-access
         self.body = torchvision.models._utils.IntermediateLayerGetter(
             backbone_model, config['return_layers'])
+        #pylint: enable=protected-access
         in_channels_list = [
             config['in_channel'] * 2, #type: ignore
             config['in_channel'] * 4, #type: ignore

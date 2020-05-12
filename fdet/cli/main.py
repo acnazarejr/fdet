@@ -168,7 +168,8 @@ def _detect(detector: Detector, input_data, kwargs: Dict[str, Any]) -> None:
 
     detections = collections.OrderedDict()
     batch = list()
-    for key, image in tqdm(input_data, disable=kwargs.get('quiet'), leave=True):
+    pbar = tqdm(input_data, disable=kwargs.get('quiet') or len(input_data) == 1, leave=True)
+    for key, image in pbar:
 
         if isinstance(image, str):
             image = fdet.io.read_as_rgb(image)

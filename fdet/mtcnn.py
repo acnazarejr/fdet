@@ -88,7 +88,7 @@ class MTCNN(Detector):
     def _run_data_batch(self, data: np.ndarray) -> List[List[SingleDetType]]:
 
         frames = [Image.fromarray(frame) for frame in data]
-        detections: List[List[SingleDetType]] = list()
+        detections = list()
 
         # ------------------------------------------------------------------------------------------
         # FIRST STAGE
@@ -127,7 +127,7 @@ class MTCNN(Detector):
 
 
         for frame_bboxes, frame_landmarks in zip(frames_bboxes_list, frames_landmarks_list):
-            frame_detections: List[SingleDetType] = list()
+            frame_detections = list()
             if frame_bboxes is not None:
                 for bbox, keypoints in zip(frame_bboxes, frame_landmarks):
                     frame_detections.append({
@@ -157,7 +157,7 @@ class MTCNN(Detector):
         factor = 0.707  # sqrt(0.5)
 
         # scales for scaling the image
-        scales: List[float] = list()
+        scales = list()
 
         # scales the image so that
         # minimum size that we can detect equals to
@@ -172,7 +172,7 @@ class MTCNN(Detector):
             factor_count += 1
 
         # List to store the bboxes of pnet belonging to all detection frames
-        all_frames_bboxes_list: List[List[np.ndarray]] = [list() for _ in range(0, len(frames))]
+        all_frames_bboxes_list = [list() for _ in range(0, len(frames))]
 
         # run PNet on different scales
         for scale in scales:
@@ -180,7 +180,7 @@ class MTCNN(Detector):
             # scale the image and convert it to a float array
             scaled_width, scaled_heigth = math.ceil(width * scale), math.ceil(height * scale)
 
-            scaled_frame_list: List = list()
+            scaled_frame_list = list()
             for frame in frames:
                 scaled_frame = frame.resize((scaled_width, scaled_heigth), Image.BILINEAR)
                 scaled_frame = np.asarray(scaled_frame, 'float32')
@@ -210,7 +210,7 @@ class MTCNN(Detector):
                 keep = _nms(bboxes[:, 0:5], overlap_threshold=0.5)
                 all_frames_bboxes_list[idx].append(bboxes[keep])
 
-        final_bboxes: List[np.ndarray] = list()
+        final_bboxes = list()
 
         for frame_bboxes in all_frames_bboxes_list:
             if frame_bboxes:
@@ -231,7 +231,7 @@ class MTCNN(Detector):
                        threshold: float, nms_threshold: float) -> np.ndarray:
 
         prev_idx = 0
-        frames_bboxes_indexes_list: List[int] = list()
+        frames_bboxes_indexes_list = list()
         frames_bboxes_indexes_list.insert(0, 0)
         for frame_bboxes in all_frames_bboxes_candidates:
             n_detections = frame_bboxes.shape[0] if frame_bboxes is not None else 0
@@ -294,7 +294,7 @@ class MTCNN(Detector):
         zip_iterable = zip(probs_by_frame, offsets_by_frame, all_frames_bboxes_candidates)
         for frame_probs, frame_offsets, frame_bboxes in zip_iterable:
 
-            keep_bboxes: Optional[np.ndarray] = None
+            keep_bboxes = None
 
             if frame_bboxes is not None:
                 keep = np.where(frame_probs[:, 1] > threshold)[0]
@@ -325,7 +325,7 @@ class MTCNN(Detector):
 
 
         prev_idx = 0
-        frames_bboxes_indexes_list: List[int] = list()
+        frames_bboxes_indexes_list = list()
         frames_bboxes_indexes_list.insert(0, 0)
         for _, frame_bboxes in enumerate(all_frames_bboxes_candidates):
             n_detections = frame_bboxes.shape[0] if frame_bboxes is not None else 0
@@ -644,7 +644,7 @@ def _nms(boxes, overlap_threshold=0.5, mode='union'):
     """
 
     # if there are no boxes, return the empty list
-    if len(boxes) == 0:
+    if boxes.size == 0:
         return []
 
     # list of picked indices
@@ -656,7 +656,7 @@ def _nms(boxes, overlap_threshold=0.5, mode='union'):
     area = (x2 - x1 + 1.0)*(y2 - y1 + 1.0)
     ids = np.argsort(score)  # in increasing order
 
-    while len(ids) > 0:
+    while ids.size > 0:
 
         # grab index of the largest value
         last = len(ids) - 1
@@ -688,10 +688,7 @@ def _nms(boxes, overlap_threshold=0.5, mode='union'):
             overlap = inter/(area[i] + area[ids[:last]] - inter)
 
         # delete all boxes where overlap is too big
-        ids = np.delete(
-            ids,
-            np.concatenate([[last], np.where(overlap > overlap_threshold)[0]])
-        )
+        ids = np.delete(ids, np.concatenate([[last], np.where(overlap > overlap_threshold)[0]]))
 
     return pick
 

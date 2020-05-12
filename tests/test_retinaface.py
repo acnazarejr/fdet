@@ -5,8 +5,20 @@
 import os
 import json
 import pytest
+import numpy as np
 from fdet.utils.errors import DetectorValueError
 import fdet
+
+def _assert_detections(dets_a, dets_b):
+    for det_a, det_b in zip(dets_a, dets_b):
+
+        assert det_a['box'] == pytest.approx(det_b['box'], rel=0.5)
+
+        key_a = np.asarray(list(det_a['keypoints'].values())).flatten()
+        key_b = np.asarray(list(det_b['keypoints'].values())).flatten()
+        assert key_a == pytest.approx(key_b, rel=0.5)
+
+        assert det_a['confidence'] == pytest.approx(det_b['confidence'], rel=0.02)
 
 @pytest.fixture
 def resources_path():
@@ -64,37 +76,37 @@ def test_retinaface_low(resnet_detector, mobilenet_detector, images_dir, outputs
     image = fdet.io.read_as_rgb(os.path.join(images_dir, 'low.jpg'))
 
     gt_path = os.path.join(outputs_dir, 'retinaface_resnet50', 'low.json')
-    assert json.load(open(gt_path, 'r'))['low.jpg'] == resnet_detector.detect(image)
+    _assert_detections(json.load(open(gt_path, 'r'))['low.jpg'], resnet_detector.detect(image))
 
     gt_path = os.path.join(outputs_dir, 'retinaface_mobilenet', 'low.json')
-    assert json.load(open(gt_path, 'r'))['low.jpg'] == mobilenet_detector.detect(image)
+    _assert_detections(json.load(open(gt_path, 'r'))['low.jpg'], mobilenet_detector.detect(image))
 
 def test_retinaface_medium(resnet_detector, mobilenet_detector, images_dir, outputs_dir):
     image = fdet.io.read_as_rgb(os.path.join(images_dir, 'medium.jpg'))
 
     gt_path = os.path.join(outputs_dir, 'retinaface_resnet50', 'medium.json')
-    assert json.load(open(gt_path, 'r'))['medium.jpg'] == resnet_detector.detect(image)
+    _assert_detections(json.load(open(gt_path, 'r'))['medium.jpg'], resnet_detector.detect(image))
 
     gt_path = os.path.join(outputs_dir, 'retinaface_mobilenet', 'medium.json')
-    assert json.load(open(gt_path, 'r'))['medium.jpg'] == mobilenet_detector.detect(image)
+    _assert_detections(json.load(open(gt_path, 'r'))['medium.jpg'], mobilenet_detector.detect(image))
 
 def test_retinaface_gray(resnet_detector, mobilenet_detector, images_dir, outputs_dir):
     image = fdet.io.read_as_rgb(os.path.join(images_dir, 'gray.jpg'))
 
     gt_path = os.path.join(outputs_dir, 'retinaface_resnet50', 'gray.json')
-    assert json.load(open(gt_path, 'r'))['gray.jpg'] == resnet_detector.detect(image)
+    _assert_detections(json.load(open(gt_path, 'r'))['gray.jpg'], resnet_detector.detect(image))
 
     gt_path = os.path.join(outputs_dir, 'retinaface_mobilenet', 'gray.json')
-    assert json.load(open(gt_path, 'r'))['gray.jpg'] == mobilenet_detector.detect(image)
+    _assert_detections(json.load(open(gt_path, 'r'))['gray.jpg'], mobilenet_detector.detect(image))
 
 def test_retinaface_sea(resnet_detector, mobilenet_detector, images_dir, outputs_dir):
     image = fdet.io.read_as_rgb(os.path.join(images_dir, 'sea.jpg'))
 
     gt_path = os.path.join(outputs_dir, 'retinaface_resnet50', 'sea.json')
-    assert json.load(open(gt_path, 'r'))['sea.jpg'] == resnet_detector.detect(image)
+    _assert_detections(json.load(open(gt_path, 'r'))['sea.jpg'], resnet_detector.detect(image))
 
     gt_path = os.path.join(outputs_dir, 'retinaface_mobilenet', 'sea.json')
-    assert json.load(open(gt_path, 'r'))['sea.jpg'] == mobilenet_detector.detect(image)
+    _assert_detections(json.load(open(gt_path, 'r'))['sea.jpg'], mobilenet_detector.detect(image))
 
 def test_retinaface_batch(mobilenet_detector, resources_path, outputs_dir):
 
@@ -103,4 +115,6 @@ def test_retinaface_batch(mobilenet_detector, resources_path, outputs_dir):
         batch_images.append(fdet.io.read_as_rgb(os.path.join(resources_path, 'frames', frame_file)))
     gt_path = os.path.join(outputs_dir, 'retinaface_mobilenet', 'frames.json')
     gt_detections = json.load(open(gt_path, 'r'))
-    assert list(gt_detections.values()) == mobilenet_detector.batch_detect(batch_images)
+    batch_detections = mobilenet_detector.batch_detect(batch_images)
+    for gt_image_detections, image_detections in zip(gt_detections.values(), batch_detections):
+        _assert_detections(gt_image_detections, image_detections)

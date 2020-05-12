@@ -24,6 +24,20 @@ def video_path(resources_path):
 def frames_path(resources_path):
     return os.path.join(resources_path, 'frames')
 
+
+def test_cli_invalid(low_image_path, video_path, frames_path):
+    runner = CliRunner()
+    with tempfile.TemporaryDirectory() as temp_dir:
+        output = os.path.join(temp_dir, 'out.json')
+        result = runner.invoke(main, ['-i', low_image_path, '-v', video_path, '-o', output])
+        assert result.exit_code != 0
+        result = runner.invoke(main, ['-i', low_image_path, '-d', frames_path, '-o', output])
+        assert result.exit_code != 0
+        result = runner.invoke(main, ['-i', low_image_path, '-o', output])
+        assert result.exit_code != 0
+        result = runner.invoke(main, ['-o', output])
+        assert result.exit_code != 0
+
 def test_cli_mtcnn(low_image_path):
     with tempfile.TemporaryDirectory() as temp_dir:
         runner = CliRunner()

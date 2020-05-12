@@ -4,11 +4,12 @@ channels:
 - conda-forge
 - defaults
 dependencies:
-- python=3.6
+- python=3.5
 - pip
 - pylint
 - mypy
 - pytest
+- pytest-cov
 - pytorch
 - torchvision
 - cudatoolkit
