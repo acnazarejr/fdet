@@ -50,7 +50,8 @@ class MTCNN(Detector):
                 enable or not. Defaults to True.
         """
 
-        Detector.__init__(self, cuda_devices, cuda_enable)
+        Detector.__init__(self, cuda_enable=cuda_enable, cuda_devices=cuda_devices,
+                          cuda_benchmark=cuda_benchmark)
 
         if min_face_size < 20 or min_face_size > 1000:
             raise DetectorValueError('The min_face_size argument must be between 20 and 1000.')
@@ -88,9 +89,6 @@ class MTCNN(Detector):
 
         frames = [Image.fromarray(frame) for frame in data]
         detections: List[List[SingleDetType]] = list()
-
-        if not frames:
-            return detections
 
         # ------------------------------------------------------------------------------------------
         # FIRST STAGE

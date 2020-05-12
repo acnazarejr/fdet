@@ -23,8 +23,6 @@ class VideoHandle():
             self._video_reader.set(cv2.CAP_PROP_POS_FRAMES, 0)
         except cv2.error as cv_error:
             raise DetectorIOError(str(cv_error))
-        except IOError as ioerror:
-            raise DetectorIOError(str(ioerror))
 
 
     def __iter__(self) -> 'VideoHandle':
@@ -48,8 +46,6 @@ def read_as_rgb(path: str) -> np.ndarray:
         return cv2.cvtColor(cv2.imread(path, cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)
     except cv2.error as cv_error:
         raise DetectorIOError(str(cv_error))
-    except IOError as ioerror:
-        raise DetectorIOError(str(ioerror))
 
 def save(path: str, image: np.ndarray) -> None:
     """Save a RGB image"""
@@ -57,8 +53,6 @@ def save(path: str, image: np.ndarray) -> None:
         cv2.imwrite(path, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
     except cv2.error as cv_error:
         raise DetectorIOError(str(cv_error))
-    except IOError as ioerror:
-        raise DetectorIOError(str(ioerror))
 
 
 ConfType = float

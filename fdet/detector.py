@@ -18,8 +18,9 @@ class Detector(ABC):
     """Abstract base class for Detectors"""
 
 
-    def __init__(self, cuda_devices: Optional[Sequence[int]] = None, cuda_benchmark: bool = True,
-                 cuda_enable: bool = torch.cuda.is_available()) -> None:
+    def __init__(self, cuda_enable: bool = torch.cuda.is_available(),
+                 cuda_devices: Optional[Sequence[int]] = None, cuda_benchmark: bool = True) -> None:
+
 
         if not isinstance(cuda_enable, bool):
             raise DetectorValueError('The cuda_enable value must be a boolean.')
@@ -96,10 +97,8 @@ class Detector(ABC):
             raise DetectorInputError('The batch must be a Sequence or numpy array.')
 
         if isinstance(batch, Sequence):
-            try:
-                batch = np.stack(batch)
-            except ValueError:
-                DetectorInputError('All images from batch must have the same shape.')
+            batch = np.stack(batch)
+
 
         if isinstance(batch, np.ndarray) and not batch.ndim == 4:
             raise DetectorInputError(
@@ -112,40 +111,6 @@ class Detector(ABC):
             )
 
         return batch
-
-    # def detect(self, data: np.ndarray) -> SingleDetType:
-    #     """detect"""
-    #     pass
-        # np_data = self.__check_input_data(data)
-        # n_images, _, _, _ = np_data.shape
-
-        # batch_detections = self._detect_batch(np_data)
-
-        # torch.cuda.empty_cache()
-
-        # if n_images == 1:
-        #     return batch_detections[0]
-        # return batch_detections
-
-
-
-
-
-    # @staticmethod
-    # def __check_input_data(data: DataType, expected_single_image: bool = False) -> np.ndarray:
-
-    #     if isinstance(data, Sequence):
-    #         data = np.stack(data)
-
-    #     if isinstance(data, np.ndarray):
-    #         np_data = data
-    #         if np_data.ndim == 3:
-    #             np_data = np.expand_dims(data, axis=0)
-    #         if np_data.ndim != 4:
-    #             raise ValueError(f'Invalid data shape {np_data.shape}')
-    #         return np_data
-
-    #     raise ValueError(f'Invalid input data type {type(data)}')
 
     def _init_torch_module(self, module: torch.nn.Module) -> torch.nn.Module:
         if self._cuda_enable:

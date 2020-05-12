@@ -11,6 +11,7 @@ from torchvision.ops.boxes import batched_nms
 import torchvision.models
 from torchvision.models.utils import load_state_dict_from_url
 from fdet.detector import Detector, SingleDetType
+from fdet.utils.errors import DetectorValueError
 
 #pylint: disable=too-many-arguments
 #pylint: disable=too-many-locals
@@ -26,20 +27,54 @@ class RetinaFace(Detector):
     - https://github.com/biubug6/Pytorch_Retinaface
     """
 
+    @staticmethod
+    def valid_backbones() -> List[str]:
+        """List of valid backbones
+
+        Returns:
+            List[str]: A list with currently valid backbones.
+        """
+        return ['RESNET50', 'MOBILENET']
+
     def __init__(self, backbone: str = 'RESNET50', threshold: float = 0.8,
                  nms_threshold: float = 0.4, max_face_size: int = 1000,
                  cuda_enable: bool = torch.cuda.is_available(),
                  cuda_devices: Optional[Sequence[int]] = None, cuda_benchmark: bool = True) -> None:
-        """Initializes the MTCNN detector."""
+        """Initializes the MTCNN detector.
 
-        Detector.__init__(self, cuda_devices, cuda_enable)
+        Args:
+            backbone (str, optional): The backbone model [RESNET50 or MOBILENET]. Defaults to
+                'RESNET50'.
+            threshold (float, optional): The detection threshold. Defaults to 0.8.
+            nms_threshold (float, optional): The nms threshold. Defaults to 0.4.
+            max_face_size (int, optional): [description]. Defaults to 1000.
+            cuda_enable (bool, optional): Indicates if cuda should be used. Defaults to
+                cuda.is_available().
+            cuda_devices (Optional[List[int]], optional): CUDA GPUs to be used. If None, uses all
+                avaliable GPUs. Defaults to None.
+            cuda_benchmark (bool, optional): [description]. Indicates if the cuda_benchmark is
+                enable or not. Defaults to True.
+        """
 
+        Detector.__init__(self, cuda_enable=cuda_enable, cuda_devices=cuda_devices,
+                          cuda_benchmark=cuda_benchmark)
+
+        if (not isinstance(backbone, str)) or (backbone not in self.valid_backbones()):
+            raise DetectorValueError('Invalid backbone: ' + str(backbone))
         self._net = self._init_torch_module(
             self.__load_retina_module(backbone=backbone)
         )
 
+        if threshold < 0.0 or threshold > 1.0:
+            raise DetectorValueError('The threshold value must be between 0 and 1.')
         self._threshold = threshold
+
+        if nms_threshold < 0.0 or nms_threshold > 1.0:
+            raise DetectorValueError('The nms_threshold value must be between 0 and 1.')
         self._nms_threshold = nms_threshold
+
+        if max_face_size < 100 or max_face_size > 1000:
+            raise DetectorValueError('The max_face_size argument must be between 100 and 1000.')
         self._max_face_size = max_face_size
 
         torch.cuda.manual_seed(1137) # type: ignore
@@ -123,10 +158,8 @@ class RetinaFace(Detector):
         url = ''
         if backbone == 'MOBILENET':
             url = 'https://www.dropbox.com/s/kr1xjmzry4l8p6g/retinaface_mobilenetv1_final.pt?dl=1'
-        elif backbone == 'RESNET50':
+        else: #if backbone == 'RESNET50':
             url = 'https://www.dropbox.com/s/d0xdha71fwr53uk/retinaface_resnet50_final.pt?dl=1'
-        else:
-            raise ValueError(f'Invalid backbone option: {backbone}')
 
         state_dict = load_state_dict_from_url(url, map_location=self._device_control)
 

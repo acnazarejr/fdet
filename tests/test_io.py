@@ -6,6 +6,7 @@ import tempfile
 import os
 import pytest
 import cv2
+import json
 import numpy as np
 from fdet.utils.errors import DetectorIOError
 import fdet
@@ -18,6 +19,8 @@ def resources_path():
 def low_image(resources_path):
     low_path = os.path.join(resources_path, 'images', 'low.jpg')
     return cv2.cvtColor(cv2.imread(low_path, cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)
+
+
 
 def test_read_as_rgb(resources_path, low_image):
     with pytest.raises(DetectorIOError):
@@ -44,10 +47,15 @@ def test_video_handle(resources_path):
     with pytest.raises(DetectorIOError):
         fdet.io.VideoHandle('invalid_path')
     video = fdet.io.VideoHandle(os.path.join(resources_path, 'video.mp4'))
-    assert len(video) == 74
+    assert len(video) == 49
     count = 0
     for idx, frame in video:
         count += 1
         assert count == idx
         assert frame.shape == (720, 1280, 3)
 
+
+def test_draw(resources_path):
+    detections = json.load(open(os.path.join(resources_path, 'outputs', 'mtcnn', 'low.json'), 'r'))
+    low_image = os.path.join(resources_path, 'images', 'low.jpg')
+    fdet.io.draw_detections(low_image, detections['low.jpg'], thickness=None)

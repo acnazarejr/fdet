@@ -7,7 +7,6 @@ import collections
 import functools
 import numpy as np
 import torch
-import cv2
 import click
 from tqdm import tqdm
 from click_option_group import RequiredMutuallyExclusiveOptionGroup as OptionGroup
@@ -63,7 +62,7 @@ def _common_options(func):
                             readable=False, resolve_path=True, allow_dash=False, path_type=None)
         ),
         click.option(
-            '-b', '--batch-size', 'batch_size',
+            '-bs', '--batch-size', 'batch_size',
             required=False,
             help='The size of the detect batch (useful for multiple inputs of the same size)',
             type=click.IntRange(0, 1000), default=1, show_default=True,
@@ -114,12 +113,12 @@ def mtcnn(**kwargs):
 @_common_options
 @click.option(
     '-b', '--backbone', 'backbone',
-    type=click.Choice(['RESNET50', 'MOBILENET'], case_sensitive=False),
+    type=click.Choice(fdet.RetinaFace.valid_backbones(), case_sensitive=False),
     required=True, help='The backbone network'
 )
 @click.option(
     '-m', '--max-size', 'max_size',
-    type=click.IntRange(20, 1000),
+    type=click.IntRange(100, 1000),
     default=1000, show_default=True,
     help='Maximun size of face to detect, in pixels'
 )
@@ -183,30 +182,23 @@ def _detect(detector: Detector, input_data, kwargs: Dict[str, Any]) -> None:
     if batch:
         detections.update(__process_batch(batch))
 
+    os.makedirs(os.path.dirname(str(kwargs.get('output_file'))), exist_ok=True)
     with open(str(kwargs.get('output_file')), 'w') as pfile:
         json.dump(detections, pfile)
 
 
 def _process_input(kwargs) -> Iterable[Tuple[Hashable, Union[str, np.ndarray]]]:
-    try:
-        if kwargs['image_file'] is not None and kwargs['image_file']:
-            return [(os.path.basename(ifile), ifile) for ifile in kwargs['image_file']]
-        if kwargs['video_file'] is not None:
-            return fdet.io.VideoHandle(kwargs['video_file'])
-        if kwargs['images_list'] is not None:
-            return [
-                (os.path.basename(ifile), ifile)
-                for ifile in open(kwargs['images_list'], 'r').read().splitlines()
-            ]
-        if kwargs['images_dir'] is not None:
-            return [
-                (ifile, os.path.join(kwargs['images_dir'], ifile))
-                for ifile in os.listdir(kwargs['images_dir'])
-            ]
-        raise IOError('Invalid Input type')
-    except cv2.error as cv_error:
-        raise click.ClickException(str(cv_error))
-    except IOError as ioerror:
-        raise click.ClickException(str(ioerror))
-    except Exception as error:
-        raise click.ClickException('Unexpected error: ' + str(error))
+
+    if kwargs['image_file'] is not None and kwargs['image_file']:
+        return [(os.path.basename(ifile), ifile) for ifile in kwargs['image_file']]
+    if kwargs['video_file'] is not None:
+        return fdet.io.VideoHandle(kwargs['video_file'])
+    if kwargs['images_list'] is not None:
+        return [
+            (os.path.basename(ifile), ifile)
+            for ifile in open(kwargs['images_list'], 'r').read().splitlines()
+        ]
+    return [
+        (ifile, os.path.join(kwargs['images_dir'], ifile))
+        for ifile in os.listdir(kwargs['images_dir'])
+    ]
