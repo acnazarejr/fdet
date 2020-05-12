@@ -424,7 +424,7 @@ class _RetinaModule(torch.nn.Module):
 
     }
 
-    def __init__(self, device_control: torch.Device, backbone: str = 'RESNET50'):
+    def __init__(self, device_control: torch.device, backbone: str = 'RESNET50'):
         """
         :param cfg:  Network related settings.
         """
