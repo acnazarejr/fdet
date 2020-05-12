@@ -1,6 +1,6 @@
 """The RetinaFace Detector"""
 
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Sequence
 from itertools import product
 import math
 import numpy as np
@@ -10,7 +10,7 @@ import cv2
 from torchvision.ops.boxes import batched_nms
 import torchvision.models
 from torchvision.models.utils import load_state_dict_from_url
-from fdet.detector import Detector, OutType
+from fdet.detector import Detector, SingleDetType
 
 #pylint: disable=too-many-arguments
 #pylint: disable=too-many-locals
@@ -28,8 +28,8 @@ class RetinaFace(Detector):
 
     def __init__(self, backbone: str = 'RESNET50', threshold: float = 0.8,
                  nms_threshold: float = 0.4, max_face_size: int = 1000,
-                 cuda_benchmark: bool = True, cuda_devices: Optional[List[int]] = None,
-                 cuda_enable: bool = torch.cuda.is_available()) -> None:
+                 cuda_enable: bool = torch.cuda.is_available(),
+                 cuda_devices: Optional[Sequence[int]] = None, cuda_benchmark: bool = True) -> None:
         """Initializes the MTCNN detector."""
 
         Detector.__init__(self, cuda_devices, cuda_enable)
@@ -47,7 +47,7 @@ class RetinaFace(Detector):
         torch.backends.cudnn.benchmark = cuda_benchmark # type: ignore
         self._net.eval()
 
-    def _detect_batch(self, data: np.ndarray) -> List[OutType]:
+    def _run_data_batch(self, data: np.ndarray) -> List[List[SingleDetType]]:
 
         _, im_height, im_width, _ = data.shape
         max_axis = max(im_height, im_width)
@@ -174,16 +174,16 @@ def _decode_landm(pre, priors, variances):
                         ), dim=2)
     return landms
 
-def _make_dict(det):
+def _make_dict(det) -> SingleDetType:
     return {
-        'box': (int(det[0]), int(det[1]), int(det[2] - det[0]), int(det[3] - det[1])),
+        'box': [int(det[0]), int(det[1]), int(det[2] - det[0]), int(det[3] - det[1])],
         'confidence': float(det[4]),
         'keypoints': {
-            'left_eye': (int(det[5]), int(det[6])),
-            'right_eye': (int(det[7]), int(det[8])),
-            'nose': (int(det[9]), int(det[10])),
-            'mouth_left': (int(det[11]), int(det[12])),
-            'mouth_right': (int(det[13]), int(det[14])),
+            'left_eye': [int(det[5]), int(det[6])],
+            'right_eye': [int(det[7]), int(det[8])],
+            'nose': [int(det[9]), int(det[10])],
+            'mouth_left': [int(det[11]), int(det[12])],
+            'mouth_right': [int(det[13]), int(det[14])],
         }
     }
 

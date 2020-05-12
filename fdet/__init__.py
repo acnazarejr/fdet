@@ -6,4 +6,4 @@ __version__ = '0.1.0'
 
 from fdet.mtcnn import MTCNN
 from fdet.retinaface import RetinaFace
-from fdet import io
+from fdet.utils import io

@@ -2,12 +2,14 @@
 
 import math
 import collections
-from typing import Tuple, List, Optional#, Dict
+from typing import Tuple, List, Optional, Sequence
+import urllib.request
 import numpy as np
 from PIL import Image
 import torch
 from torchvision.models.utils import load_state_dict_from_url
-from fdet.detector import Detector, OutType
+from fdet.detector import Detector, SingleDetType
+from fdet.utils.errors import DetectorValueError, DetectorModelError
 
 
 # pylint: disable=invalid-sequence-index
@@ -29,38 +31,49 @@ class MTCNN(Detector):
     def __init__(self, min_face_size: float = 20.0,
                  thresholds: Tuple[float, float, float] = (0.6, 0.7, 0.8),
                  nms_thresholds: Tuple[float, float, float] = (0.7, 0.7, 0.7),
-                 cuda_benchmark: bool = True, cuda_devices: Optional[List[int]] = None,
-                 cuda_enable: bool = torch.cuda.is_available()) -> None:
+                 cuda_enable: bool = torch.cuda.is_available(),
+                 cuda_devices: Optional[Sequence[int]] = None, cuda_benchmark: bool = True) -> None:
         """Initializes the MTCNN detector.
 
-        :param min_face_size:  Minimum size of face to detect, in pixels. Defaults to 20.0.
-        :type min_face_size: float, optional
-
-        :param thresholds: The thresholds fo each MTCNN step. Defaults to (0.6, 0.7, 0.8).
-        :type thresholds: Tuple[float, float, float], optional
-
-        :param nms_thresholds: The NMS thresholds fo each MTCNN step. Defaults to (0.7, 0.7, 0.7).
-        :type nms_thresholds: Tuple[float, float, float], optional
-
-        :param cuda_benchmark: Indicates if the cuda_benchmark is enable or not. Defaults to True.
-        :type cuda_benchmark: bool, optional
-
-        :param cuda_devices: GPUs to be used. If None, uses all avaliable GPUs. Defaults to None.
-        :type cuda_devices: Optional[List[int]], optional
-
-        :param cuda_enable: Indicates if cuda should be used. Defaults to cuda.is_available().
-        :type cuda_enable: bool, optional
+        Args:
+            min_face_size (float, optional): The minimum size of the face to detect. Defaults to
+                20.0.
+            thresholds (Tuple[float, float, float], optional): The thresholds fo each MTCNN step.
+                Defaults to (0.6, 0.7, 0.8).
+            nms_thresholds (Tuple[float, float, float], optional): The NMS thresholds fo each MTCNN
+                step. Defaults to (0.7, 0.7, 0.7).
+            cuda_enable (bool, optional): Indicates if cuda should be used. Defaults to
+                cuda.is_available().
+            cuda_devices (Optional[List[int]], optional): CUDA GPUs to be used. If None, uses all
+                avaliable GPUs. Defaults to None.
+            cuda_benchmark (bool, optional): [description]. Indicates if the cuda_benchmark is
+                enable or not. Defaults to True.
         """
+
         Detector.__init__(self, cuda_devices, cuda_enable)
 
+        if min_face_size < 20 or min_face_size > 1000:
+            raise DetectorValueError('The min_face_size argument must be between 20 and 1000.')
         self._min_face_size = min_face_size
+
+        if not isinstance(thresholds, tuple) or len(thresholds) != 3:
+            raise DetectorValueError('The thresholds must be a tuple of 3 numbers.')
+        for threshold in thresholds:
+            if threshold < 0.0 or threshold > 1.0:
+                raise DetectorValueError('The thresholds values must be between 0 and 1.')
         self._thresholds = thresholds
+
+        if not isinstance(nms_thresholds, tuple) or len(nms_thresholds) != 3:
+            raise DetectorValueError('The nms_thresholds must be a tuple of 3 numbers.')
+        for threshold in nms_thresholds:
+            if threshold < 0.0 or threshold > 1.0:
+                raise DetectorValueError('The nms_thresholds values must be between 0 and 1.')
         self._nms_thresholds = nms_thresholds
 
-        base_url = 'https://www.dropbox.com/s/'
-        self._pnet = self.__load_model(_PNet, base_url + '1xi4gjoboaoa7e2/mtcnn_pnet.pt?dl=1')
-        self._rnet = self.__load_model(_RNet, base_url + 'w6gqd6bxrjwh1ux/mtcnn_rnet.pt?dl=1')
-        self._onet = self.__load_model(_ONet, base_url + 'hupifrhnigx89dp/mtcnn_onet.pt?dl=1')
+        base_url = 'https://github.com/acnazarejr/fdet/releases/download/weights/'
+        self._pnet = self.__load_model(_PNet, base_url + 'mtcnn_pnet.pt')
+        self._rnet = self.__load_model(_RNet, base_url + 'mtcnn_rnet.pt')
+        self._onet = self.__load_model(_ONet, base_url + 'mtcnn_onet.pt')
 
         self._pnet = self._init_torch_module(self._pnet)
         self._rnet = self._init_torch_module(self._rnet)
@@ -71,10 +84,10 @@ class MTCNN(Detector):
         torch.backends.cudnn.benchmark = cuda_benchmark # type: ignore
         self._onet.eval()
 
-    def _detect_batch(self, data: List[np.ndarray]) -> List[OutType]:
+    def _run_data_batch(self, data: np.ndarray) -> List[List[SingleDetType]]:
 
         frames = [Image.fromarray(frame) for frame in data]
-        detections: List[OutType] = list()
+        detections: List[List[SingleDetType]] = list()
 
         if not frames:
             return detections
@@ -116,19 +129,19 @@ class MTCNN(Detector):
 
 
         for frame_bboxes, frame_landmarks in zip(frames_bboxes_list, frames_landmarks_list):
-            frame_detections: OutType = list()
+            frame_detections: List[SingleDetType] = list()
             if frame_bboxes is not None:
                 for bbox, keypoints in zip(frame_bboxes, frame_landmarks):
                     frame_detections.append({
-                        'box': (int(bbox[0]), int(bbox[1]),
-                                int(bbox[2]-bbox[0]), int(bbox[3]-bbox[1])),
+                        'box': [int(bbox[0]), int(bbox[1]),
+                                int(bbox[2]-bbox[0]), int(bbox[3]-bbox[1])],
                         'confidence': float(bbox[-1]),
                         'keypoints': {
-                            'left_eye': (int(keypoints[0]), int(keypoints[5])),
-                            'right_eye': (int(keypoints[1]), int(keypoints[6])),
-                            'nose': (int(keypoints[2]), int(keypoints[7])),
-                            'mouth_left': (int(keypoints[3]), int(keypoints[8])),
-                            'mouth_right': (int(keypoints[4]), int(keypoints[9])),
+                            'left_eye': [int(keypoints[0]), int(keypoints[5])],
+                            'right_eye': [int(keypoints[1]), int(keypoints[6])],
+                            'nose': [int(keypoints[2]), int(keypoints[7])],
+                            'mouth_left': [int(keypoints[3]), int(keypoints[8])],
+                            'mouth_right': [int(keypoints[4]), int(keypoints[9])],
                         }
                     })
             final_result.append(frame_detections)
@@ -414,7 +427,10 @@ class MTCNN(Detector):
 
     def __load_model(self, net_class: type, url: str) -> torch.nn.Module:
         """Download and construct the models"""
-        state_dict = load_state_dict_from_url(url, map_location=self._device_control)
+        try:
+            state_dict = load_state_dict_from_url(url, map_location=self._device_control)
+        except urllib.error.HTTPError: #type: ignore
+            raise DetectorModelError('Invalid model weights url: ' + url)
         model = net_class()
         model.load_state_dict(state_dict, strict=False)
         return model
@@ -494,12 +510,6 @@ class _RNet(torch.nn.Module):
 
         self.conv5_1 = torch.nn.Linear(128, 2)
         self.conv5_2 = torch.nn.Linear(128, 4)
-
-        # this_file_path = os.path.dirname(os.path.abspath(__file__))
-        # pnet_weights_path = os.path.join(this_file_path, 'weights', 'rnet.npy')
-        # weights = np.load(pnet_weights_path, allow_pickle=True)[()]
-        # for n, p in self.named_parameters():
-        #     p.data = torch.FloatTensor(weights[n])
 
     #pylint: disable=arguments-differ
     #pylint: disable=invalid-name

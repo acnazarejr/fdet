@@ -1,15 +1,18 @@
 """The setup script"""
 
 from setuptools import setup
-import fdet
+
+AUTHOR = 'Antonio C. Nazare Jr.'
+EMAIL = 'antonio.nazare@dcc.ufmg.br'
+VERSION = '0.1.0'
 
 setup(
     name='fdet',
-    version=fdet.__version__,
-    author=fdet.__author__,
-    author_email=fdet.__email__,
-    maintainer=fdet.__author__,
-    maintainer_email=fdet.__email__,
+    version=VERSION,
+    author=AUTHOR,
+    author_email=EMAIL,
+    maintainer=AUTHOR,
+    maintainer_email=EMAIL,
     url='http://github.com/acnazarejr/fdet',
     download_url='http://github.com/acnazarejr/fdet',
     classifiers=[
@@ -40,9 +43,9 @@ setup(
     keywords='face recognition detection biometry',
     packages=['fdet'],
     zip_safe=False,
-    python_requires='>=3.6',
+    python_requires='>=3.5',
     install_requires=[line for line in open('requirements.txt').read().split('\n') if line != ''],
     entry_points={
-        'console_scripts': ['fdet=fdet.cli.fdet:main']
+        'console_scripts': ['fdet=fdet.cli.main:main']
     }
 )
