@@ -61,9 +61,7 @@ class RetinaFace(Detector):
 
         if (not isinstance(backbone, str)) or (backbone not in self.valid_backbones()):
             raise DetectorValueError('Invalid backbone: ' + str(backbone))
-        self._net = self._init_torch_module(
-            self.__load_retina_module(backbone=backbone)
-        )
+        self._net = self._init_torch_module(self.__load_retina_module(backbone=backbone))
 
         if threshold < 0.0 or threshold > 1.0:
             raise DetectorValueError('The threshold value must be between 0 and 1.')
@@ -458,11 +456,11 @@ class _RetinaModule(torch.nn.Module):
         self.BboxHead = self._make_bbox_head(fpn_num=3, inchannels=config['out_channel'])
         self.LandmarkHead = self._make_landmark_head(fpn_num=3, inchannels=config['out_channel'])
 
-    @staticmethod
-    def _load_mobile_net_model():
+    def _load_mobile_net_model(self):
         model = _MobileNetV1()
         state_dict = load_state_dict_from_url(
-            'https://www.dropbox.com/s/bd1keyo085pscfu/mobilenetv1_pretrain.pt?dl=1'
+            'https://www.dropbox.com/s/bd1keyo085pscfu/mobilenetv1_pretrain.pt?dl=1',
+            map_location=self._device_control
         )
         # # load params
         model.load_state_dict(state_dict)
