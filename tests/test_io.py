@@ -46,6 +46,8 @@ def test_save(low_image):
 def test_video_handle(resources_path):
     with pytest.raises(DetectorIOError):
         fdet.io.VideoHandle('invalid_path')
+    with pytest.raises(DetectorIOError):
+        fdet.io.VideoHandle(os.path.join(resources_path, 'images', 'low.jpg'))
     video = fdet.io.VideoHandle(os.path.join(resources_path, 'video.mp4'))
     assert len(video) == 49
     count = 0

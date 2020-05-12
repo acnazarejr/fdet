@@ -24,6 +24,9 @@ class VideoHandle():
         except cv2.error as cv_error:
             raise DetectorIOError(str(cv_error))
 
+        if self._n_frames <= 1:
+            raise DetectorIOError('Invlid video source: ' + source)
+
 
     def __iter__(self) -> 'VideoHandle':
         self._video_reader.set(cv2.CAP_PROP_POS_FRAMES, 0)
