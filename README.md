@@ -10,7 +10,7 @@
 
 The `fdet` is a ready-to-use implementation of deep learning face detectors for PyTorch in Python 3.5 or higher.
 
-![Example](https://github.com/acnazarejr/fdet/raw/master/example.jpg)
+![Example](https://github.com/acnazarejr/fdet/raw/master/assets/example.jpg)
 
 ## Features
 
@@ -56,6 +56,8 @@ pip install fdet
                 'nose': [520, 77],
                 'right_eye': [530, 65]}}]
 ```
+
+![Example](https://github.com/acnazarejr/fdet/raw/master/assets/terminal.gif)
 
 ## Credits
 
