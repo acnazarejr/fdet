@@ -1,6 +1,6 @@
 # FDet - Deep Learning Face Detector
 
-The `fdet` is an easy to use face detection library based on on Deep Learning algorithms and implemented in PyTorch.
+The `fdet` is an easy to use face detection module based on MTCNN and RetinaFace algorithms.
 
 
 

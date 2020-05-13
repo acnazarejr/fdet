@@ -13,6 +13,7 @@ from fdet.detector import Detector
 import fdet
 
 @click.group()
+@click.version_option(fdet.__version__)
 def main():
     """main fdet cli function"""
 
