@@ -10,6 +10,8 @@
 
 The `fdet` is an easy to use face detection module based on MTCNN and RetinaFace algorithms.
 
+<img src="https://github.com/acnazarejr/fdet/raw/master/example.jpg" style="width:100%;"/>
+
 ## Installation
 
 1. **This implementation requires PyTorch**. If this is the first time you use PyTorch, please install it in your environment following the [oficial instructions](https://pytorch.org/get-started/locally/).
