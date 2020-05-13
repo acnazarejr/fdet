@@ -279,6 +279,7 @@ class _SSH(torch.nn.Module):
         self.conv7x7_3 = _conv_bn_no_relu(out_channel//4, out_channel//4, stride=1)
 
     def forward(self, _input):
+        """forward"""
         conv3X3 = self.conv3X3(_input)
 
         conv5X5_1 = self.conv5X5_1(_input)
@@ -307,6 +308,7 @@ class _FPN(torch.nn.Module):
         self.merge2 = _conv_bn(out_channels, out_channels, leaky=leaky)
 
     def forward(self, _input):
+        """forward"""
         # names = list(_input.keys())
         _input = list(_input.values())
 
@@ -356,6 +358,7 @@ class _MobileNetV1(torch.nn.Module):
         self.fc = torch.nn.Linear(256, 1000)
 
     def forward(self, x):
+        """forward"""
         x = self.stage1(x)
         x = self.stage2(x)
         x = self.stage3(x)
@@ -375,6 +378,7 @@ class _ClassHead(torch.nn.Module):
                                        stride=1, padding=0)
 
     def forward(self, x):
+        """forward"""
         out = self.conv1x1(x)
         out = out.permute(0, 2, 3, 1).contiguous()
         return out.view(out.shape[0], -1, 2)
@@ -388,6 +392,7 @@ class _BboxHead(torch.nn.Module):
                                        padding=0)
 
     def forward(self, x):
+        """forward"""
         out = self.conv1x1(x)
         out = out.permute(0, 2, 3, 1).contiguous()
         return out.view(out.shape[0], -1, 4)
@@ -401,6 +406,7 @@ class _LandmarkHead(torch.nn.Module):
                                        stride=1, padding=0)
 
     def forward(self, x):
+        """forward"""
         out = self.conv1x1(x)
         out = out.permute(0, 2, 3, 1).contiguous()
 
@@ -490,6 +496,7 @@ class _RetinaModule(torch.nn.Module):
         return landmarkhead
 
     def forward(self, inputs):
+        """forward"""
         out = self.body(inputs)
 
         # FPN
@@ -527,6 +534,7 @@ class _PriorBox():
         self.name = "s"
 
     def forward(self):
+        """forward"""
         """forward"""
         anchors = []
         for k, feature_map in enumerate(self.feature_maps):

@@ -445,6 +445,7 @@ class _Flatten(torch.nn.Module):
 
     #pylint: disable=arguments-differ
     def forward(self, x):
+        """forward"""
         # without this pretrained model isn't working
         x = x.transpose(3, 2).contiguous()
         return x.view(x.size(0), -1)
@@ -474,6 +475,7 @@ class _PNet(torch.nn.Module):
     #pylint: disable=arguments-differ
     #pylint: disable=invalid-name
     def forward(self, x):
+        """forward"""
         x = self.features(x)
         a = self.conv4_1(x)
         b = self.conv4_2(x)
@@ -512,6 +514,7 @@ class _RNet(torch.nn.Module):
     #pylint: disable=arguments-differ
     #pylint: disable=invalid-name
     def forward(self, x):
+        """forward"""
         x = self.features(x)
         a = self.conv5_1(x)
         b = self.conv5_2(x)
@@ -555,6 +558,7 @@ class _ONet(torch.nn.Module):
     #pylint: disable=arguments-differ
     #pylint: disable=invalid-name
     def forward(self, x):
+        """forward"""
         x = self.features(x)
         a = self.conv6_1(x)
         b = self.conv6_2(x)
