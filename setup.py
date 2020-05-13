@@ -1,21 +1,23 @@
 """The setup script"""
 
 from setuptools import setup
-import fdet
+
+AUTHOR = 'Antonio C. Nazare Jr.'
+EMAIL = 'antonio.nazare@dcc.ufmg.br'
+VERSION = '0.2.0'
 
 setup(
     name='fdet',
-    version=fdet.__version__,
-    author=fdet.__author__,
-    author_email=fdet.__email__,
-    maintainer=fdet.__author__,
-    maintainer_email=fdet.__email__,
+    version=VERSION,
+    author=AUTHOR,
+    author_email=EMAIL,
+    maintainer=AUTHOR,
+    maintainer_email=EMAIL,
     url='http://github.com/acnazarejr/fdet',
     download_url='http://github.com/acnazarejr/fdet',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
-        'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Intended Audience :: Developers',
         'Intended Audience :: Education',
@@ -27,22 +29,24 @@ setup(
         'Operating System :: Microsoft :: Windows :: Windows 7',
         'Operating System :: Microsoft :: Windows :: Windows 8',
         'Operating System :: Microsoft :: Windows :: Windows 8.1',
+        'Operating System :: MacOS',
         'Operating System :: POSIX :: Linux',
+        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
         'Topic :: Software Development :: Libraries'
     ],
-    description='The fdet is an easy to use face detection implementation based on PyTorch.',
-    long_description=open('readme.md').read(),
+    description='An easy to use face detection module based on MTCNN and RetinaFace algorithms.',
+    long_description=open('README.md').read(),
     long_description_content_type='text/markdown',  # This is important!
     keywords='face recognition detection biometry',
     packages=['fdet'],
     zip_safe=False,
-    python_requires='>=3.6',
+    python_requires='>=3.5',
     install_requires=[line for line in open('requirements.txt').read().split('\n') if line != ''],
     entry_points={
-        'console_scripts': ['fdet=fdet.cli.fdet:main']
+        'console_scripts': ['fdet=fdet.cli.main:main']
     }
 )

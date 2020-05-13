@@ -97,3 +97,5 @@ ENV/
 .pytest_cache
 
 .acrosync
+
+cov.xml

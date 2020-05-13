@@ -1,16 +1,17 @@
 """The RetinaFace Detector"""
 
-from typing import Optional, List, Dict
+from typing import Optional, List, Sequence
 from itertools import product
 import math
 import numpy as np
 import torch
-import torchvision.models._utils
 import cv2
+import torchvision.models._utils
 from torchvision.ops.boxes import batched_nms
 import torchvision.models
 from torchvision.models.utils import load_state_dict_from_url
-from fdet.detector import Detector, OutType
+from fdet.detector import Detector, SingleDetType
+from fdet.utils.errors import DetectorValueError
 
 #pylint: disable=too-many-arguments
 #pylint: disable=too-many-locals
@@ -26,20 +27,52 @@ class RetinaFace(Detector):
     - https://github.com/biubug6/Pytorch_Retinaface
     """
 
-    def __init__(self, backbone: str = 'RESNET50', threshold: float = 0.8,
+    @staticmethod
+    def valid_backbones() -> List[str]:
+        """List of valid backbones
+
+        Returns:
+            List[str]: A list with currently valid backbones.
+        """
+        return ['RESNET50', 'MOBILENET']
+
+    def __init__(self, backbone: str, threshold: float = 0.8,
                  nms_threshold: float = 0.4, max_face_size: int = 1000,
-                 cuda_benchmark: bool = True, cuda_devices: Optional[List[int]] = None,
-                 cuda_enable: bool = torch.cuda.is_available()) -> None:
-        """Initializes the MTCNN detector."""
+                 cuda_enable: bool = torch.cuda.is_available(),
+                 cuda_devices: Optional[Sequence[int]] = None, cuda_benchmark: bool = True) -> None:
+        """Initializes the MTCNN detector.
 
-        Detector.__init__(self, cuda_devices, cuda_enable)
+        Args:
+            backbone (str, optional): The backbone model [RESNET50 or MOBILENET]. Defaults to
+                'RESNET50'.
+            threshold (float, optional): The detection threshold. Defaults to 0.8.
+            nms_threshold (float, optional): The nms threshold. Defaults to 0.4.
+            max_face_size (int, optional): [description]. Defaults to 1000.
+            cuda_enable (bool, optional): Indicates if cuda should be used. Defaults to
+                cuda.is_available().
+            cuda_devices (Optional[List[int]], optional): CUDA GPUs to be used. If None, uses all
+                avaliable GPUs. Defaults to None.
+            cuda_benchmark (bool, optional): [description]. Indicates if the cuda_benchmark is
+                enable or not. Defaults to True.
+        """
 
-        self._net = self._init_torch_module(
-            self.__load_retina_module(backbone=backbone)
-        )
+        Detector.__init__(self, cuda_enable=cuda_enable, cuda_devices=cuda_devices,
+                          cuda_benchmark=cuda_benchmark)
 
+        if (not isinstance(backbone, str)) or (backbone not in self.valid_backbones()):
+            raise DetectorValueError('Invalid backbone: ' + str(backbone))
+        self._net = self._init_torch_module(self.__load_retina_module(backbone=backbone))
+
+        if threshold < 0.0 or threshold > 1.0:
+            raise DetectorValueError('The threshold value must be between 0 and 1.')
         self._threshold = threshold
+
+        if nms_threshold < 0.0 or nms_threshold > 1.0:
+            raise DetectorValueError('The nms_threshold value must be between 0 and 1.')
         self._nms_threshold = nms_threshold
+
+        if max_face_size < 100 or max_face_size > 1000:
+            raise DetectorValueError('The max_face_size argument must be between 100 and 1000.')
         self._max_face_size = max_face_size
 
         torch.cuda.manual_seed(1137) # type: ignore
@@ -47,7 +80,7 @@ class RetinaFace(Detector):
         torch.backends.cudnn.benchmark = cuda_benchmark # type: ignore
         self._net.eval()
 
-    def _detect_batch(self, data: np.ndarray) -> List[OutType]:
+    def _run_data_batch(self, data: np.ndarray) -> List[List[SingleDetType]]:
 
         _, im_height, im_width, _ = data.shape
         max_axis = max(im_height, im_width)
@@ -102,7 +135,7 @@ class RetinaFace(Detector):
         batch_scores = batch_scores[keep]
 
 
-        batch_detections: List[List[Dict]] = list()
+        batch_detections = list()
         for idx in range(n_images):
 
             mask_current_image = batch_idx.eq(idx)
@@ -123,14 +156,12 @@ class RetinaFace(Detector):
         url = ''
         if backbone == 'MOBILENET':
             url = 'https://www.dropbox.com/s/kr1xjmzry4l8p6g/retinaface_mobilenetv1_final.pt?dl=1'
-        elif backbone == 'RESNET50':
+        else: #if backbone == 'RESNET50':
             url = 'https://www.dropbox.com/s/d0xdha71fwr53uk/retinaface_resnet50_final.pt?dl=1'
-        else:
-            raise ValueError(f'Invalid backbone option: {backbone}')
 
         state_dict = load_state_dict_from_url(url, map_location=self._device_control)
 
-        model = _RetinaModule(backbone=backbone)
+        model = _RetinaModule(device_control=self._device_control, backbone=backbone)
         model.load_state_dict(state_dict, strict=False)
         return model
 
@@ -174,16 +205,16 @@ def _decode_landm(pre, priors, variances):
                         ), dim=2)
     return landms
 
-def _make_dict(det):
+def _make_dict(det) -> SingleDetType:
     return {
-        'box': (int(det[0]), int(det[1]), int(det[2] - det[0]), int(det[3] - det[1])),
+        'box': [int(det[0]), int(det[1]), int(det[2] - det[0]), int(det[3] - det[1])],
         'confidence': float(det[4]),
         'keypoints': {
-            'left_eye': (int(det[5]), int(det[6])),
-            'right_eye': (int(det[7]), int(det[8])),
-            'nose': (int(det[9]), int(det[10])),
-            'mouth_left': (int(det[11]), int(det[12])),
-            'mouth_right': (int(det[13]), int(det[14])),
+            'left_eye': [int(det[5]), int(det[6])],
+            'right_eye': [int(det[7]), int(det[8])],
+            'nose': [int(det[9]), int(det[10])],
+            'mouth_left': [int(det[11]), int(det[12])],
+            'mouth_right': [int(det[13]), int(det[14])],
         }
     }
 
@@ -248,6 +279,7 @@ class _SSH(torch.nn.Module):
         self.conv7x7_3 = _conv_bn_no_relu(out_channel//4, out_channel//4, stride=1)
 
     def forward(self, _input):
+        """forward"""
         conv3X3 = self.conv3X3(_input)
 
         conv5X5_1 = self.conv5X5_1(_input)
@@ -276,6 +308,7 @@ class _FPN(torch.nn.Module):
         self.merge2 = _conv_bn(out_channels, out_channels, leaky=leaky)
 
     def forward(self, _input):
+        """forward"""
         # names = list(_input.keys())
         _input = list(_input.values())
 
@@ -325,6 +358,7 @@ class _MobileNetV1(torch.nn.Module):
         self.fc = torch.nn.Linear(256, 1000)
 
     def forward(self, x):
+        """forward"""
         x = self.stage1(x)
         x = self.stage2(x)
         x = self.stage3(x)
@@ -344,6 +378,7 @@ class _ClassHead(torch.nn.Module):
                                        stride=1, padding=0)
 
     def forward(self, x):
+        """forward"""
         out = self.conv1x1(x)
         out = out.permute(0, 2, 3, 1).contiguous()
         return out.view(out.shape[0], -1, 2)
@@ -357,6 +392,7 @@ class _BboxHead(torch.nn.Module):
                                        padding=0)
 
     def forward(self, x):
+        """forward"""
         out = self.conv1x1(x)
         out = out.permute(0, 2, 3, 1).contiguous()
         return out.view(out.shape[0], -1, 4)
@@ -370,6 +406,7 @@ class _LandmarkHead(torch.nn.Module):
                                        stride=1, padding=0)
 
     def forward(self, x):
+        """forward"""
         out = self.conv1x1(x)
         out = out.permute(0, 2, 3, 1).contiguous()
 
@@ -393,11 +430,13 @@ class _RetinaModule(torch.nn.Module):
 
     }
 
-    def __init__(self, backbone: str = 'RESNET50'):
+    def __init__(self, device_control: torch.device, backbone: str = 'RESNET50'):
         """
         :param cfg:  Network related settings.
         """
         torch.nn.Module.__init__(self)
+
+        self._device_control = device_control
 
         config = _RetinaModule.__configs[backbone]
         backbone_model = None
@@ -405,11 +444,11 @@ class _RetinaModule(torch.nn.Module):
             backbone_model = self._load_mobile_net_model()
         elif backbone == 'RESNET50':
             backbone_model = torchvision.models.resnet50(pretrained=True)
-        else:
-            raise ValueError(f'Invalid backbone option: {backbone}')
 
+        #pylint: disable=protected-access
         self.body = torchvision.models._utils.IntermediateLayerGetter(
             backbone_model, config['return_layers'])
+        #pylint: enable=protected-access
         in_channels_list = [
             config['in_channel'] * 2, #type: ignore
             config['in_channel'] * 4, #type: ignore
@@ -425,11 +464,11 @@ class _RetinaModule(torch.nn.Module):
         self.BboxHead = self._make_bbox_head(fpn_num=3, inchannels=config['out_channel'])
         self.LandmarkHead = self._make_landmark_head(fpn_num=3, inchannels=config['out_channel'])
 
-    @staticmethod
-    def _load_mobile_net_model():
+    def _load_mobile_net_model(self):
         model = _MobileNetV1()
         state_dict = load_state_dict_from_url(
-            'https://www.dropbox.com/s/bd1keyo085pscfu/mobilenetv1_pretrain.pt?dl=1'
+            'https://www.dropbox.com/s/bd1keyo085pscfu/mobilenetv1_pretrain.pt?dl=1',
+            map_location=self._device_control
         )
         # # load params
         model.load_state_dict(state_dict)
@@ -457,6 +496,7 @@ class _RetinaModule(torch.nn.Module):
         return landmarkhead
 
     def forward(self, inputs):
+        """forward"""
         out = self.body(inputs)
 
         # FPN

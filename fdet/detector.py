@@ -1,31 +1,35 @@
 """Detector base class"""
 
 from abc import ABC, abstractmethod
-from typing import Optional, List, Union, Tuple, Dict, Sequence, Iterable#, Hashable
+from typing import Optional, List, Union, Dict, Sequence
+import collections.abc
 import torch
 import numpy as np
-import cv2
+from fdet.utils.errors import DetectorCudaError, DetectorValueError, DetectorInputError
 
 
-InType = Union[np.ndarray, str]
-
-ConfType = float
-BoxType = Tuple[int, int, int, int]
-KeypointsType = Dict[str, Tuple[int, int]]
-SingleDetType = Dict[str, Union[ConfType, BoxType, KeypointsType]]
-OutType = List[SingleDetType]
-
-# IterableInType = Union[Tuple[Hashable, np.ndarray], Sequence[Tuple[Hashable, np.ndarray]]]
+BoxType = List[int]
+KeypointsType = Dict[str, List[int]]
+SingleDetType = Dict[str, Union[float, BoxType, KeypointsType]]
+ImageDetOutType = List[SingleDetType]
+BatchDetOutType = List[ImageDetOutType]
 
 
 class Detector(ABC):
     """Abstract base class for Detectors"""
 
 
-    def __init__(self, cuda_devices: Optional[List[int]] = None,
-                 cuda_enable: bool = torch.cuda.is_available()) -> None:
+    def __init__(self, cuda_enable: bool = torch.cuda.is_available(),
+                 cuda_devices: Optional[Sequence[int]] = None, cuda_benchmark: bool = True) -> None:
 
+
+        if not isinstance(cuda_enable, bool):
+            raise DetectorValueError('The cuda_enable value must be a boolean.')
         self._cuda_enable = cuda_enable and torch.cuda.is_available()
+
+        if cuda_devices is not None and not isinstance(cuda_devices, collections.abc.Sequence):
+            raise DetectorValueError('The cuda_devices value must be a sequence.')
+
         if self._cuda_enable:
             self._cuda_devices = _get_torch_devices(cuda_devices)
         else:
@@ -34,123 +38,82 @@ class Detector(ABC):
         self._cuda_enable = self._cuda_enable and bool(self._cuda_devices)
         self._device_control = self._cuda_devices[0] if self._cuda_enable else torch.device('cpu')
 
-
-    @property
-    def cuda_enable(self) -> bool:
-        """cudda_enable"""
-        return self._cuda_enable
-
-    @property
-    def cuda_devices(self) -> List[torch.device]:
-
-        """cuda_devices"""
-        return self._cuda_devices
-
-
-    def detect(self, data: Union[InType, Iterable[InType]]) -> Union[OutType, List[OutType]]:
-        """detect"""
-
-        np_data = self.__check_input_data(data)
-        n_images, _, _, _ = np_data.shape
-
-        batch_detections = self._detect_batch(np_data)
-
-        torch.cuda.empty_cache()
-
-        if n_images == 1:
-            return batch_detections[0]
-        return batch_detections
-
-    # def video_detect(self, video: vop.VideoHandle, batch_size: int = None,
-    #                  show_progress: bool = True, leave_progress: bool = True) -> List[DetType]:
-    #     """video_detect"""
-    #     if batch_size is None:
-    #         batch_size = 1
-
-    #     if batch_size <= 0:
-    #         raise ValueError(f'Invalid batch size {batch_size}')
-
-    #     video.reset()
-    #     self.stats.clear()
-    #     pbar = tqdm(video, disable=not show_progress, leave=leave_progress, total=len(video))
-
-    #     batch_images: List[np.ndarray] = list()
-    #     all_detections: List[DetType] = list()
-
-    #     def __run_batch(batch):
-    #         batch_detections = self.detect(batch)
-    #         if batch_size == 1:
-    #             all_detections.append(batch_detections) #type: ignore
-    #         else:
-    #             all_detections.extend(batch_detections) #type: ignore
-
-    #     for frame in pbar:
-    #         batch_images.append(frame)
-    #         if len(batch_images) >= batch_size:
-    #             __run_batch(batch_images)
-    #             batch_images.clear()
-    #         pbar.set_postfix(fps=self.stats.fps, last_fps=self.stats.last_fps,
-    #                          average=self.stats.average_image_time)
-    #     if batch_images:
-    #         __run_batch(batch_images)
-    #         pbar.set_postfix(fps=self.stats.fps, last_fps=self.stats.last_fps,
-    #                          average=self.stats.average_image_time)
-    #     pbar.update()
-    #     return all_detections
-
-
-    # def iterative_detect(self, iterable: Iterable[IterableInType], show_progress: bool = True,
-    #                      leave_progress: bool = True) -> Dict[Hashable, DetType]:
-    #     """iterative_detect"""
-
-    #     self.stats.clear()
-    #     pbar = tqdm(iterable, disable=not show_progress, leave=leave_progress)
-
-    #     all_detections: Dict = OrderedDict()
-    #     for data in pbar:
-    #         batch = data if isinstance(data, list) else [data]
-    #         batch_keys, batch_images = zip(*batch)
-    #         batch_detections = self.detect(batch_images)
-    #         if len(batch_keys) == 1:
-    #             all_detections[batch_keys[0]] = batch_detections
-    #         else:
-    #             all_detections.update(zip(batch_keys, batch_detections))
-    #         pbar.set_postfix(
-    #             fps=self.stats.fps,
-    #             last_fps=self.stats.last_fps,
-    #             average=self.stats.average_image_time)
-
-    #     return all_detections
+        if not isinstance(cuda_benchmark, bool):
+            raise DetectorValueError('The cuda_benchmark value must be a boolean.')
+        self._cuda_benchmark = cuda_benchmark
 
 
     @abstractmethod
-    def _detect_batch(self, data: List[np.ndarray]) -> List[OutType]:
+    def _run_data_batch(self, data: np.ndarray) -> BatchDetOutType:
         raise NotImplementedError('Abstract method!')
 
+    def detect(self, image: np.ndarray) -> ImageDetOutType:
+        """
+        Detects bounding boxes, and with respective landmark points, from the specified image.
+
+        Args:
+            image (np.ndarray): The input image to process.
+
+        Returns:
+            List[Dict]: A list containing all the bounding boxes and lankdmarks detected.
+        """
+        np_data = self.__check_image(image)
+        batch_detections = self._run_data_batch(np_data)
+        return batch_detections[0]
+
+    def batch_detect(self, image_batch: Union[np.ndarray, Sequence[np.ndarray]]) -> BatchDetOutType:
+        """
+        Detects bounding boxes, and with respective landmark points, from the specified images in
+        the bach. The batch size must be defined by the user.
+
+        Args:
+            image_batch (Sequence[np.ndarray]): The images sequence to process.
+
+        Returns:
+            List[List[Det]]: A list of lists. For each image in the batch, returns a list of all the
+                bounding boxes and lankdmarks detected in the respective image.
+        """
+        np_data = self.__check_batch(image_batch)
+        return self._run_data_batch(np_data)
+
+
     @staticmethod
-    def __check_input_data(data: Union[InType, Sequence[InType]]) -> np.ndarray:
+    def __check_image(image: np.ndarray) -> np.ndarray:
+        if not isinstance(image, np.ndarray):
+            raise DetectorInputError('The input image must be numpy array.')
+        if not image.ndim == 3:
+            raise DetectorInputError(
+                'The input image must have 3 dimensions (W x H X channels). Got: ' + str(image.ndim)
+            )
+        if not image.shape[2] == 3:
+            raise DetectorInputError(
+                'The input image must have 3 channels (R, G and B). Got: ' + str(image.shape[2])
+            )
+        return np.expand_dims(image, axis=0)
 
-        def __read_as_rgb(path):
-            return cv2.cvtColor(cv2.imread(path, cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)
+    @staticmethod
+    def __check_batch(batch: Union[np.ndarray, Sequence[np.ndarray]]) -> np.ndarray:
 
-        if isinstance(data, str):
-            data = __read_as_rgb(data)
+        if not isinstance(batch, (np.ndarray, collections.abc.Sequence)):
+            raise DetectorInputError('The batch must be a Sequence or numpy array.')
 
-        if isinstance(data, Sequence):
-            data = [
-                image if isinstance(image, np.ndarray) else __read_as_rgb(data) for image in data
-            ]
-            data = np.stack(data)
+        if isinstance(batch, collections.abc.Sequence):
+            if not batch:
+                raise DetectorInputError('The batch must have least one image.')
+            batch = np.stack(batch)
 
-        if isinstance(data, np.ndarray):
-            np_data = data
-            if np_data.ndim == 3:
-                np_data = np.expand_dims(data, axis=0)
-            if np_data.ndim != 4:
-                raise ValueError(f'Invalid data shape {np_data.shape}')
-            return np_data
 
-        raise ValueError(f'Invalid input data type {type(data)}')
+        if isinstance(batch, np.ndarray) and not batch.ndim == 4:
+            raise DetectorInputError(
+                'All images must have 3 dimensions (W x H X channels). Got: ' + str(batch.ndim - 1)
+            )
+
+        if isinstance(batch, np.ndarray) and not batch.shape[3] == 3:
+            raise DetectorInputError(
+                'All images must have 3 channels (R, G and B). Got: ' + str(batch.shape[3])
+            )
+
+        return batch
 
     def _init_torch_module(self, module: torch.nn.Module) -> torch.nn.Module:
         if self._cuda_enable:
@@ -160,13 +123,13 @@ class Detector(ABC):
         return module.to(self._device_control)
 
 
-def _get_torch_devices(devices_index: Optional[List[int]] = None) -> List[torch.device]:
+def _get_torch_devices(devices_index: Optional[Sequence[int]] = None) -> List[torch.device]:
 
     def __create_cuda_device(index: int) -> torch.device:
         if not torch.cuda.is_available():
-            raise EnvironmentError('Cuda is not available in this host.')
+            raise DetectorCudaError('CUDA is not available in this host.')
         if index not in list(range(torch.cuda.device_count())):
-            raise ValueError('Invalid device index: '+ str(index))
+            raise DetectorCudaError('Invalid CUDA device index: '+ str(index))
         return torch.device('cuda', index)
 
     if devices_index is None:
@@ -175,26 +138,26 @@ def _get_torch_devices(devices_index: Optional[List[int]] = None) -> List[torch.
 
 def _init_single_gpu_module(module: torch.nn.Module, torch_device: torch.device) -> torch.nn.Module:
     if not torch.cuda.is_available():
-        raise EnvironmentError('Cuda is not available in this host.')
+        raise DetectorCudaError('CUDA is not available in this host.')
     if torch_device.type != 'cuda':
-        raise ValueError('Invalid device type: ' + str(torch_device.type))
+        raise DetectorCudaError('Invalid torch CUDA device type: ' + str(torch_device.type))
     if torch_device.index not in list(range(torch.cuda.device_count())):
-        raise ValueError('Invalid device index: '  + str(torch_device.index))
+        raise DetectorCudaError('Invalid torch CUDA device index: '  + str(torch_device.index))
     return module.to(torch_device)
 
 def _init_multi_gpu_module(module: torch.nn.Module,
                            torch_devices: List[torch.device]) -> torch.nn.Module:
     if not torch.cuda.is_available():
-        raise EnvironmentError('Cuda is not available in this host.')
+        raise DetectorCudaError('CUDA is not available in this host.')
 
     if len(torch_devices) < 2:
-        raise ValueError('A multi-gpu module requires at least two cuda devices.')
+        raise DetectorCudaError('A multi-gpu module requires at least two CUDA devices.')
 
     for torch_device in torch_devices:
         if torch_device.type != 'cuda':
-            raise ValueError('Invalid device type: ' + str(torch_device.type))
+            raise DetectorCudaError('Invalid torch CUDA device type: ' + str(torch_device.type))
         if torch_device.index not in list(range(torch.cuda.device_count())):
-            raise ValueError('Invalid device index: '  + str(torch_device.index))
+            raise DetectorCudaError('Invalid torch CUDA device index: '  + str(torch_device.index))
 
     module = torch.nn.DataParallel(module, device_ids=torch_devices)
     module = module.to(torch_devices[0])

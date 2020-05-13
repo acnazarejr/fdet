@@ -18,6 +18,10 @@ end_of_line = lf
 [*.md]
 indent_size = 2
 
+[*.yml]
+indent_style = space
+indent_size = 4
+
 [LICENSE]
 insert_final_newline = false
 

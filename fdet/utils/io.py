@@ -1,20 +1,31 @@
 """io module"""
 
+import os
 from typing import Tuple, Union, List, Sequence, Dict, Any
 import cv2
 import numpy as np
 from colour import Color
+from fdet.utils.errors import DetectorIOError
 
 class VideoHandle():
     """Help class to iterate over video"""
 
     def __init__(self, source: str) -> None:
 
-        self._video_reader = cv2.VideoCapture(source)
-        self._n_frames = 0
-        while self._video_reader.grab():
-            self._n_frames += 1
-        self._video_reader.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        if not os.path.exists(source) or not os.path.isfile(source):
+            raise DetectorIOError('Invlid video source: ' + source)
+
+        try:
+            self._video_reader = cv2.VideoCapture(source)
+            self._n_frames = 0
+            while self._video_reader.grab():
+                self._n_frames += 1
+            self._video_reader.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        except cv2.error as cv_error:
+            raise DetectorIOError(str(cv_error))
+
+        if self._n_frames <= 1:
+            raise DetectorIOError('Invlid video source: ' + source)
 
 
     def __iter__(self) -> 'VideoHandle':
@@ -32,13 +43,19 @@ class VideoHandle():
     def __len__(self) -> int:
         return self._n_frames
 
-def read_as_rgb(path: str) -> np.ndarray:
+def read_as_rgb(path: str):
     """Read an image as RGB format"""
-    return cv2.cvtColor(cv2.imread(path, cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)
+    try:
+        return cv2.cvtColor(cv2.imread(path, cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)
+    except cv2.error as cv_error:
+        raise DetectorIOError(str(cv_error))
 
 def save(path: str, image: np.ndarray) -> None:
-    """Save an image"""
-    cv2.imwrite(path, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+    """Save a RGB image"""
+    try:
+        cv2.imwrite(path, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+    except cv2.error as cv_error:
+        raise DetectorIOError(str(cv_error))
 
 
 ConfType = float
