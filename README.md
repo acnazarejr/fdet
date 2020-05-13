@@ -10,8 +10,7 @@
 
 The `fdet` is an easy to use face detection module based on MTCNN and RetinaFace algorithms.
 
-<img src="https://github.com/acnazarejr/fdet/raw/master/example.jpg" style="width:100%;"/>
-
+![Example](https://github.com/acnazarejr/fdet/raw/master/example.jpg)
 
 ## Installation
 
