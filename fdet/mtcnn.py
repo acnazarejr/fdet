@@ -13,7 +13,6 @@ from fdet.utils.errors import DetectorValueError, DetectorModelError
 
 
 # pylint: disable=invalid-sequence-index
-# pylint: disable=too-many-locals
 # pylint: disable=too-many-arguments
 
 class MTCNN(Detector):
@@ -88,7 +87,6 @@ class MTCNN(Detector):
     def _run_data_batch(self, data: np.ndarray) -> List[List[SingleDetType]]:
 
         frames = [Image.fromarray(frame) for frame in data]
-        detections = list()
 
         # ------------------------------------------------------------------------------------------
         # FIRST STAGE
@@ -98,7 +96,7 @@ class MTCNN(Detector):
         )
 
         if all_frames_bboxes_candidates is None or not all_frames_bboxes_candidates:
-            return detections
+            return [list()] * len(frames)
 
         # ------------------------------------------------------------------------------------------
         # SECOND STAGE
@@ -109,10 +107,10 @@ class MTCNN(Detector):
         )
 
         if self.__is_list_empty(all_frames_bboxes_candidates):
-            return [[]]
+            return [list()] * len(frames)
 
         if all_frames_bboxes_candidates is None or not all_frames_bboxes_candidates:
-            return detections
+            return [list()] * len(frames)
 
         # ------------------------------------------------------------------------------------------
         # THIRD STAGE
@@ -120,14 +118,14 @@ class MTCNN(Detector):
 
 
         # Execute third_stage
-        final_result = list()
+        final_result = list() # type: List[List[SingleDetType]]
 
         frames_bboxes_list, frames_landmarks_list = self.__third_stage(
             frames, all_frames_bboxes_candidates, self._thresholds[2], self._nms_thresholds[2])
 
 
         for frame_bboxes, frame_landmarks in zip(frames_bboxes_list, frames_landmarks_list):
-            frame_detections = list()
+            frame_detections = list() # type: List[SingleDetType]
             if frame_bboxes is not None:
                 for bbox, keypoints in zip(frame_bboxes, frame_landmarks):
                     frame_detections.append({
@@ -172,7 +170,7 @@ class MTCNN(Detector):
             factor_count += 1
 
         # List to store the bboxes of pnet belonging to all detection frames
-        all_frames_bboxes_list = [list() for _ in range(0, len(frames))]
+        all_frames_bboxes_list = [list() for _ in range(0, len(frames))] # type: List[List]
 
         # run PNet on different scales
         for scale in scales:
@@ -231,7 +229,7 @@ class MTCNN(Detector):
                        threshold: float, nms_threshold: float) -> np.ndarray:
 
         prev_idx = 0
-        frames_bboxes_indexes_list = list()
+        frames_bboxes_indexes_list = list() # type: List[int]
         frames_bboxes_indexes_list.insert(0, 0)
         for frame_bboxes in all_frames_bboxes_candidates:
             n_detections = frame_bboxes.shape[0] if frame_bboxes is not None else 0
@@ -325,7 +323,7 @@ class MTCNN(Detector):
 
 
         prev_idx = 0
-        frames_bboxes_indexes_list = list()
+        frames_bboxes_indexes_list = list() # type: List[int]
         frames_bboxes_indexes_list.insert(0, 0)
         for _, frame_bboxes in enumerate(all_frames_bboxes_candidates):
             n_detections = frame_bboxes.shape[0] if frame_bboxes is not None else 0
@@ -444,10 +442,11 @@ class _Flatten(torch.nn.Module):
         torch.nn.Module.__init__(self)
 
     #pylint: disable=arguments-differ
-    def forward(self, x):
+    def forward(self, data):
+        """forward"""
         # without this pretrained model isn't working
-        x = x.transpose(3, 2).contiguous()
-        return x.view(x.size(0), -1)
+        data = data.transpose(3, 2).contiguous()
+        return data.view(data.size(0), -1)
     #pylint: enable=arguments-differ
 
 class _PNet(torch.nn.Module):
@@ -474,6 +473,7 @@ class _PNet(torch.nn.Module):
     #pylint: disable=arguments-differ
     #pylint: disable=invalid-name
     def forward(self, x):
+        """forward"""
         x = self.features(x)
         a = self.conv4_1(x)
         b = self.conv4_2(x)
@@ -512,6 +512,7 @@ class _RNet(torch.nn.Module):
     #pylint: disable=arguments-differ
     #pylint: disable=invalid-name
     def forward(self, x):
+        """forward"""
         x = self.features(x)
         a = self.conv5_1(x)
         b = self.conv5_2(x)
@@ -555,6 +556,7 @@ class _ONet(torch.nn.Module):
     #pylint: disable=arguments-differ
     #pylint: disable=invalid-name
     def forward(self, x):
+        """forward"""
         x = self.features(x)
         a = self.conv6_1(x)
         b = self.conv6_2(x)

@@ -13,7 +13,7 @@ ignore=CVS,docs,fabfile,scripts,svm,pyt
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
-ignore-patterns=
+ignore-patterns=tests/
 
 # Pickle collected data for later comparisons.
 persistent=yes
@@ -66,7 +66,7 @@ confidence=
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
 # disable=I0011,I0012,R0902,print-statement,parameter-unpacking,unpacking-in-except,old-raise-syntax,backtick,import-star-module-level,apply-builtin,basestring-builtin,buffer-builtin,cmp-builtin,coerce-builtin,execfile-builtin,file-builtin,long-builtin,raw_input-builtin,reduce-builtin,standarderror-builtin,unicode-builtin,xrange-builtin,coerce-method,delslice-method,getslice-method,setslice-method,no-absolute-import,old-division,dict-iter-method,dict-view-method,next-method-called,metaclass-assignment,indexing-exception,raising-string,reload-builtin,oct-method,hex-method,nonzero-method,cmp-method,input-builtin,round-builtin,intern-builtin,unichr-builtin,map-builtin-not-iterating,zip-builtin-not-iterating,range-builtin-not-iterating,filter-builtin-not-iterating,using-cmp-argument,long-suffix,old-ne-operator,old-octal-literal,suppressed-message,useless-suppression
-
+disable=R0903,R0902,too-few-public-methods,too-many-arguments,too-many-locals
 
 [REPORTS]
 
