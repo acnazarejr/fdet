@@ -10,9 +10,16 @@
 
 The `fdet` is a ready-to-use implementation of deep learning face detectors for PyTorch in Python 3.5 or higher.
 
-![Example](https://github.com/acnazarejr/fdet/raw/readme/example.jpg)
+![Example](https://github.com/acnazarejr/fdet/raw/master/example.jpg)
 
-Despite the availability of implementations of these algorithms, there are some disadvantages we found when using them. So we create this project to offer these features:
+## Features
+
+Currently, there are two different detectors available on FDet:
+
+- **MTCNN** - Joint face detection and alignment using multitask cascaded convolutional networks [[zhang:2016]](#references)
+- **RetinaFace** - Single-stage dense face localisation in the wild. [[deng:2019]](#references)
+
+Despite the availability of different implementations of these algorithms, there are some disadvantages we found when using them. So we create this project to offer the following features, in one package:
 
 - Real-time face detection;
 - Support to batch detection (useful for fast detection of multiple images and videos);
@@ -20,13 +27,6 @@ Despite the availability of implementations of these algorithms, there are some 
 - Provide a unified interface to assign 'CPU' or 'GPU' devices;
 - Multiple GPU's support;
 - On-demand and automatic model weights download.
-
-Currently, there are two different detectors available on FDet:
-
-- **MTCNN** - Joint face detection and alignment using multitask cascaded convolutional networks [[zhang:2016]](#references)
-- **RetinaFace** - Single-stage dense face localisation in the wild. [[deng:2019]](#references)
-
-It was written based on the other available implementations ([see credits](#credits)).
 
 ## Installation
 
@@ -59,7 +59,7 @@ pip install fdet
 
 ## Credits
 
-This implementation is heavily inspired by:
+The FDet was written heavily inspired by the other available implementations ([see credits](#credits)).
 
 - [TropComplique/mtcnn-pytorch](https://github.com/TropComplique/mtcnn-pytorch/)
 - [biubug6/Pytorch_Retinaface](https://github.com/biubug6/Pytorch_Retinaface)
