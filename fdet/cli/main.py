@@ -157,7 +157,7 @@ def _detect(detector: Detector, input_data, kwargs: Dict[str, Any]) -> None:
         for image_key, image_detections, img in zip(batch_keys, batch_detections, batch_images):
             batch_response[image_key] = image_detections
             if kwargs.get('save_frames_dir') is not None:
-                image_output = fdet.io.draw_detections(img, image_detections, color='blue')
+                image_output = fdet.io.draw_detections(img, image_detections, color='white', thickness=3)
                 filename = image_key if isinstance(image_key, str) else str(image_key) + '.png'
                 filename = os.path.join(str(kwargs.get('save_frames_dir')), filename)
                 fdet.io.save(filename, image_output)

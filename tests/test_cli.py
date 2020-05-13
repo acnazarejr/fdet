@@ -13,7 +13,7 @@ def resources_path():
     return os.path.join(os.path.dirname(__file__), 'resources')
 
 @pytest.fixture
-def low_image_path(resources_path):
+def image_path(resources_path):
     return os.path.join(resources_path, 'images', 'low.jpg')
 
 @pytest.fixture
@@ -25,32 +25,32 @@ def frames_path(resources_path):
     return os.path.join(resources_path, 'frames')
 
 
-def test_cli_invalid(low_image_path, video_path, frames_path):
+def test_cli_invalid(image_path, video_path, frames_path):
     runner = CliRunner()
     with tempfile.TemporaryDirectory() as temp_dir:
         output = os.path.join(temp_dir, 'out.json')
-        result = runner.invoke(main, ['-i', low_image_path, '-v', video_path, '-o', output])
+        result = runner.invoke(main, ['mtcnn', '-i', image_path, '-v', video_path, '-o', output])
         assert result.exit_code != 0
-        result = runner.invoke(main, ['-i', low_image_path, '-d', frames_path, '-o', output])
+        result = runner.invoke(main, ['mtcnn', '-i', image_path, '-d', frames_path, '-o', output])
         assert result.exit_code != 0
-        result = runner.invoke(main, ['-i', low_image_path, '-o', output])
+        result = runner.invoke(main, ['mtcnn', '-i', image_path, '-o', output])
         assert result.exit_code != 0
-        result = runner.invoke(main, ['-o', output])
+        result = runner.invoke(main, ['mtcnn', '-o', output])
         assert result.exit_code != 0
 
-def test_cli_mtcnn(low_image_path):
+def test_cli_mtcnn(image_path):
     with tempfile.TemporaryDirectory() as temp_dir:
         runner = CliRunner()
         output = os.path.join(temp_dir, 'out.json')
-        result = runner.invoke(main, ['mtcnn', '-i', low_image_path, '--no-cuda', '-o', output])
+        result = runner.invoke(main, ['mtcnn', '-i', image_path, '--no-cuda', '-o', output])
         assert result.exit_code == 0
 
-def test_cli_retinaface_image(low_image_path):
+def test_cli_retinaface_image(image_path):
     with tempfile.TemporaryDirectory() as temp_dir:
         runner = CliRunner()
         arguments = [
             'retinaface', '-b', 'MOBILENET',
-            '-i', low_image_path,
+            '-i', image_path,
             '--no-cuda',
             '-o', os.path.join(temp_dir, 'out.json'),
             '-s', os.path.join(temp_dir, 'frames_out')

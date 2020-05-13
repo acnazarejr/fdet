@@ -1,19 +1,24 @@
 # FDet - Deep Learning Face Detector
 
+![Build](https://github.com/acnazarejr/fdet/workflows/Build/badge.svg)
+[![CodeFactor](https://www.codefactor.io/repository/github/acnazarejr/fdet/badge)](https://www.codefactor.io/repository/github/acnazarejr/fdet)
+[![codecov](https://codecov.io/gh/acnazarejr/fdet/branch/master/graph/badge.svg)](https://codecov.io/gh/acnazarejr/fdet)
+![PyPI](https://img.shields.io/pypi/v/fdet)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fdet)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/acnazarejr/fdet)
+[![GitHub](https://img.shields.io/github/license/acnazarejr/fdet)](https://github.com/acnazarejr/fdet/blob/master/LICENSE)
+
 The `fdet` is an easy to use face detection module based on MTCNN and RetinaFace algorithms.
-
-
-
 
 ## Installation
 
-Currently it is supported Python 3.5 or higher. It can be installed through pip:
+1. **This implementation requires PyTorch**. If this is the first time you use PyTorch, please install it in your environment following the [oficial instructions](https://pytorch.org/get-started/locally/).
 
-```
+2. After install pytorch, `fdet` can be installed through pip:
+
+```bash
 pip install fdet
 ```
-> **IMPORTANT**: This implementation requires PyTorch>=1.10. If this is the first time you use PyTorch, please install it in your environment following the [oficial instructions](https://pytorch.org/get-started/locally/).
-
 
 ## Quick Start
 
@@ -31,3 +36,7 @@ pip install fdet
                 'nose': [520, 77],
                 'right_eye': [530, 65]}}]
 ```
+
+## License
+
+[MIT license](https://github.com/acnazarejr/fdet/blob/master/LICENSE)
