@@ -62,6 +62,9 @@ def _common_options(func):
                             readable=False, resolve_path=True, allow_dash=False, path_type=None)
         ),
         click.option(
+            '-p', '--print', is_flag=True, show_default=True, help='Enables the print output mode',
+        ),
+        click.option(
             '-bs', '--batch-size', 'batch_size',
             required=False,
             help='The size of the detect batch (useful for multiple inputs of the same size)',
@@ -75,7 +78,7 @@ def _common_options(func):
                             readable=False, resolve_path=True, allow_dash=False, path_type=None)
         ),
         click.option(
-            '--quiet', is_flag=True, show_default=True, help='Enables quiet mode'
+            '-q', '--quiet', is_flag=True, show_default=True, help='Enables quiet mode'
         )
     ]
     return functools.reduce(lambda x, opt: opt(x), options, func)
@@ -134,6 +137,7 @@ def mtcnn(**kwargs):
 )
 def retinaface(**kwargs):
     """retinaface detector"""
+
     input_data = _process_input(kwargs)
 
     detector = fdet.RetinaFace(backbone=kwargs.get('backbone'),
@@ -157,7 +161,8 @@ def _detect(detector: Detector, input_data, kwargs: Dict[str, Any]) -> None:
         for image_key, image_detections, img in zip(batch_keys, batch_detections, batch_images):
             batch_response[image_key] = image_detections
             if kwargs.get('save_frames_dir') is not None:
-                image_output = fdet.io.draw_detections(img, image_detections, color='white', thickness=3)
+                image_output = fdet.io.draw_detections(img, image_detections, color='white',
+                                                       thickness=3)
                 filename = image_key if isinstance(image_key, str) else str(image_key) + '.png'
                 filename = os.path.join(str(kwargs.get('save_frames_dir')), filename)
                 fdet.io.save(filename, image_output)
@@ -182,6 +187,31 @@ def _detect(detector: Detector, input_data, kwargs: Dict[str, Any]) -> None:
 
     if batch:
         detections.update(__process_batch(batch))
+
+    if kwargs.get('print'):
+        for image_key, image_detections in detections.items():
+            filename = image_key if isinstance(image_key, str) else 'frame ' + str(image_key)
+            msg = click.style('Detected faces on {}: '.format(filename),
+                              fg='yellow', bold=True, reset=False,)
+            msg += click.style(' {:04d} '.format(len(image_detections)),
+                               fg='yellow', bold=True, reset=True)
+            click.secho('=' * 118, fg='yellow', bold=True, reset=True)
+            click.echo(msg)
+            click.secho('-' * 118, fg='yellow', bold=True, reset=True)
+            colors = ['bright_red', 'bright_green', 'cyan']
+            for idx, detection in enumerate(image_detections):
+
+                msg_box = 'BBox: ({:4d} {:4d} {:4d} {:4d})'.format(*detection['box'])
+                msg_conf = 'Confidence: {:2.4f}'.format(detection['confidence'])
+                msg_keys = '         Keypoints: LEyes ({:4d} {:4d}) | REyes ({:4d} {:4d}) | '
+                msg_keys += 'Nose ({:4d} {:4d}) | LMouth ({:4d} {:4d}) | RMouth ({:4d} {:4d})'
+                kpts = detection['keypoints']
+                msg_keys = msg_keys.format(*kpts['left_eye'], *kpts['right_eye'], *kpts['nose'],
+                                           *kpts['mouth_left'], *kpts['mouth_right'])
+                msg = '  {:04d} - {} | {}\n{}'.format(idx+1, msg_box, msg_conf, msg_keys)
+                click.echo(click.style(msg, fg=colors[idx%3]))
+            click.secho('=' * 118, fg='yellow', bold=True, reset=True)
+            click.echo()
 
     os.makedirs(os.path.dirname(str(kwargs.get('output_file'))), exist_ok=True)
     with open(str(kwargs.get('output_file')), 'w') as pfile:
