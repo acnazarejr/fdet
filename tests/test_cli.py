@@ -33,8 +33,6 @@ def test_cli_invalid(image_path, video_path, frames_path):
         assert result.exit_code != 0
         result = runner.invoke(main, ['mtcnn', '-i', image_path, '-d', frames_path, '-o', output])
         assert result.exit_code != 0
-        result = runner.invoke(main, ['mtcnn', '-i', image_path, '-o', output])
-        assert result.exit_code != 0
         result = runner.invoke(main, ['mtcnn', '-o', output])
         assert result.exit_code != 0
 
@@ -52,6 +50,7 @@ def test_cli_retinaface_image(image_path):
             'retinaface', '-b', 'MOBILENET',
             '-i', image_path,
             '--no-cuda',
+            '--print',
             '-o', os.path.join(temp_dir, 'out.json'),
             '-s', os.path.join(temp_dir, 'frames_out')
         ]
