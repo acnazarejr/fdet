@@ -6,6 +6,7 @@ on:
       - '*'         # matches every branch
       - '*/*'       # matches every branch containing a single '/'
       - '!code-quality'   # excludes code-quality
+      - '!readme'   # excludes code-quality
   pull_request:
     branches:
       - '*'         # matches every branch
