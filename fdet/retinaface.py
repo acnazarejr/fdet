@@ -535,7 +535,6 @@ class _PriorBox():
 
     def forward(self):
         """forward"""
-        """forward"""
         anchors = []
         for k, feature_map in enumerate(self.feature_maps):
             min_sizes = self.min_sizes[k]

@@ -444,11 +444,11 @@ class _Flatten(torch.nn.Module):
         torch.nn.Module.__init__(self)
 
     #pylint: disable=arguments-differ
-    def forward(self, x):
+    def forward(self, data):
         """forward"""
         # without this pretrained model isn't working
-        x = x.transpose(3, 2).contiguous()
-        return x.view(x.size(0), -1)
+        data = data.transpose(3, 2).contiguous()
+        return data.view(data.size(0), -1)
     #pylint: enable=arguments-differ
 
 class _PNet(torch.nn.Module):

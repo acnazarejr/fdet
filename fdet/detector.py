@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 from typing import Optional, List, Union, Dict, Sequence
+import collections.abc
 import torch
 import numpy as np
 from fdet.utils.errors import DetectorCudaError, DetectorValueError, DetectorInputError
@@ -26,7 +27,7 @@ class Detector(ABC):
             raise DetectorValueError('The cuda_enable value must be a boolean.')
         self._cuda_enable = cuda_enable and torch.cuda.is_available()
 
-        if cuda_devices is not None and not isinstance(cuda_devices, Sequence):
+        if cuda_devices is not None and not isinstance(cuda_devices, collections.abc.Sequence):
             raise DetectorValueError('The cuda_devices value must be a sequence.')
 
         if self._cuda_enable:
@@ -93,10 +94,10 @@ class Detector(ABC):
     @staticmethod
     def __check_batch(batch: Union[np.ndarray, Sequence[np.ndarray]]) -> np.ndarray:
 
-        if not isinstance(batch, (np.ndarray, Sequence)):
+        if not isinstance(batch, (np.ndarray, collections.abc.Sequence)):
             raise DetectorInputError('The batch must be a Sequence or numpy array.')
 
-        if isinstance(batch, Sequence):
+        if isinstance(batch, collections.abc.Sequence):
             if not batch:
                 raise DetectorInputError('The batch must have least one image.')
             batch = np.stack(batch)
