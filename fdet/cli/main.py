@@ -198,7 +198,7 @@ def _detect(detector: Detector, input_data, kwargs: Dict[str, Any]) -> None:
             click.secho('=' * 118, fg='yellow', bold=True, reset=True)
             click.echo(msg)
             click.secho('-' * 118, fg='yellow', bold=True, reset=True)
-            colors = ['bright_red', 'bright_green', 'cyan']
+            colors = ['bright_magenta', 'bright_green', 'cyan']
             for idx, detection in enumerate(image_detections):
 
                 msg_box = 'BBox: ({:4d} {:4d} {:4d} {:4d})'.format(*detection['box'])
