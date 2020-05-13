@@ -13,7 +13,6 @@ from fdet.utils.errors import DetectorValueError, DetectorModelError
 
 
 # pylint: disable=invalid-sequence-index
-# pylint: disable=too-many-locals
 # pylint: disable=too-many-arguments
 
 class MTCNN(Detector):
