@@ -50,25 +50,25 @@ def test_retinaface_raises_invalid_backbone():
 
 def test_retinaface_raises_invalid_max_size():
     with pytest.raises(DetectorValueError):
-        fdet.RetinaFace(max_face_size=-1)
+        fdet.RetinaFace(backbone='MOBILENET', max_face_size=-1)
     with pytest.raises(DetectorValueError):
-        fdet.RetinaFace(max_face_size=10)
+        fdet.RetinaFace(backbone='MOBILENET', max_face_size=10)
     with pytest.raises(DetectorValueError):
-        fdet.RetinaFace(max_face_size=1050)
+        fdet.RetinaFace(backbone='MOBILENET', max_face_size=1050)
     fdet.RetinaFace(backbone='MOBILENET', max_face_size=200)
 
 def test_retinaface_raises_invalid_threshold():
     with pytest.raises(DetectorValueError):
-        fdet.RetinaFace(threshold=2.0)
+        fdet.RetinaFace(backbone='MOBILENET', threshold=2.0)
     with pytest.raises(DetectorValueError):
-        fdet.RetinaFace(threshold=-1.0)
+        fdet.RetinaFace(backbone='MOBILENET', threshold=-1.0)
     fdet.RetinaFace(backbone='MOBILENET', threshold=0.8)
 
 def test_retinaface_raises_invalid_nms_threshold():
     with pytest.raises(DetectorValueError):
-        fdet.RetinaFace(nms_threshold=2.0)
+        fdet.RetinaFace(backbone='MOBILENET', nms_threshold=2.0)
     with pytest.raises(DetectorValueError):
-        fdet.RetinaFace(nms_threshold=-1.0)
+        fdet.RetinaFace(backbone='MOBILENET', nms_threshold=-1.0)
     fdet.RetinaFace(backbone='MOBILENET', nms_threshold=0.4)
 
 

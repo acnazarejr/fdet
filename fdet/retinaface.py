@@ -36,7 +36,7 @@ class RetinaFace(Detector):
         """
         return ['RESNET50', 'MOBILENET']
 
-    def __init__(self, backbone: str = 'RESNET50', threshold: float = 0.8,
+    def __init__(self, backbone: str, threshold: float = 0.8,
                  nms_threshold: float = 0.4, max_face_size: int = 1000,
                  cuda_enable: bool = torch.cuda.is_available(),
                  cuda_devices: Optional[Sequence[int]] = None, cuda_benchmark: bool = True) -> None:
