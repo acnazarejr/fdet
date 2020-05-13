@@ -1,0 +1,218 @@
+# The configurations that used for the recording, feel free to edit them
+config:
+
+  # Specify a command to be executed
+  # like `/bin/bash -l`, `ls`, or any other commands
+  # the default is bash for Linux
+  # or powershell.exe for Windows
+  command: bash -l
+  
+  # Specify the current working directory path
+  # the default is the current working directory path
+  cwd: /home/acnazarejr/example
+  
+  # Export additional ENV variables
+  env:
+    recording: true
+  
+  # Explicitly set the number of columns
+  # or use `auto` to take the current
+  # number of columns of your shell
+  cols: 120
+  
+  # Explicitly set the number of rows
+  # or use `auto` to take the current
+  # number of rows of your shell
+  rows: 18
+  
+  # Amount of times to repeat GIF
+  # If value is -1, play once
+  # If value is 0, loop indefinitely
+  # If value is a positive number, loop n times
+  repeat: 0
+  
+  # Quality
+  # 1 - 100
+  quality: 20
+  
+  # Delay between frames in ms
+  # If the value is `auto` use the actual recording delays
+  frameDelay: auto
+  
+  # Maximum delay between frames in ms
+  # Ignored if the `frameDelay` isn't set to `auto`
+  # Set to `auto` to prevent limiting the max idle time
+  maxIdleTime: 5000
+  
+  # The surrounding frame box
+  # The `type` can be null, window, floating, or solid`
+  # To hide the title use the value null
+  # Don't forget to add a backgroundColor style with a null as type
+  frameBox:
+    type: solid
+    title: null
+    style:
+      border: 0px black solid
+      backgroundColor: black
+      # boxShadow: none
+      # margin: 0px
+  
+  # Add a watermark image to the rendered gif
+  # You need to specify an absolute path for
+  # the image on your machine or a URL, and you can also
+  # add your own CSS styles
+  watermark:
+    imagePath: null
+    style:
+      position: absolute
+      right: 15px
+      bottom: 15px
+      width: 100px
+      opacity: 0.9
+  
+  # Cursor style can be one of
+  # `block`, `underline`, or `bar`
+  cursorStyle: block
+  
+  # Font family
+  # You can use any font that is installed on your machine
+  # in CSS-like syntax
+  fontFamily: "Monaco, Lucida Console, Ubuntu Mono, Monospace"
+  
+  # The size of the font
+  fontSize: 12
+  
+  # The height of lines
+  lineHeight: 1
+  
+  # The spacing between letters
+  letterSpacing: 0
+  
+  # Theme
+  theme:
+    background: "transparent"
+    foreground: "#ffffff"
+    cursor: "#ffffff"
+    black: "#232628"
+    red: "#fc4384"
+    green: "#2ECC71"
+    yellow: "#FFC300"
+    blue: "#3498DB"
+    magenta: "#A569BD"
+    cyan: "#3498DB "
+    white: "#d5d5d0"
+    brightBlack: "#626566"
+    brightRed: "#ff7fac"
+    brightGreen: "#2ECC71"
+    brightYellow: "#FFC300"
+    brightBlue: "#3498DB"
+    brightMagenta: "#A569BD"
+    brightCyan: "#3498DB "
+    brightWhite: "#f9f9f4"
+  
+# Records, feel free to edit them
+records:
+  - delay: 10
+    content: '$ '
+  - delay: 131  
+    content: f
+  - delay: 111
+    content: d
+  - delay: 153
+    content: e
+  - delay: 100
+    content: t
+  - delay: 125
+    content: ' '
+  - delay: 149
+    content: r
+  - delay: 136
+    content: e
+  - delay: 142
+    content: t
+  - delay: 114
+    content: i
+  - delay: 153
+    content: 'n'
+  - delay: 137
+    content: a
+  - delay: 131
+    content: f
+  - delay: 134
+    content: a
+  - delay: 120
+    content: c
+  - delay: 60
+    content: e
+  - delay: 118
+    content: ' '
+  - delay: 120
+    content: '-'
+  - delay: 136
+    content: b
+  - delay: 123
+    content: ' '  
+  - delay: 130
+    content: M
+  - delay: 53
+    content: O
+  - delay: 133
+    content: B
+  - delay: 102
+    content: I
+  - delay: 103
+    content: L
+  - delay: 118
+    content: E
+  - delay: 109
+    content: 'N'
+  - delay: 88
+    content: E
+  - delay: 80
+    content: T  
+  - delay: 112
+    content: ' '
+  - delay: 115
+    content: '-'
+  - delay: 151
+    content: i
+  - delay: 113
+    content: ' '
+  - delay: 162
+    content: i  
+  - delay: 132
+    content: 'mg.jpg '
+  - delay: 106
+    content: '-'
+  - delay: 233
+    content: o
+  - delay: 158
+    content: ' '
+  - delay: 127
+    content: o
+  - delay: 59
+    content: u
+  - delay: 118
+    content: t  
+  - delay: 135
+    content: .
+  - delay: 153
+    content: j
+  - delay: 87
+    content: s
+  - delay: 77
+    content: o
+  - delay: 95
+    content: 'n'
+  - delay: 107
+    content: ' '
+  - delay: 153
+    content: '-'
+  - delay: 100
+    content: p
+  - delay: 186
+    content: "\r\n"
+  - delay: 2000
+    content: "\e[33m\e[1m======================================================================================================================\e[0m\r\n\e[33m\e[1mDetected faces on low.jpg: \e[33m\e[1m 0005 \e[0m\r\n\e[33m\e[1m----------------------------------------------------------------------------------------------------------------------\e[0m\r\n\e[95m  0001 - BBox: (  89   79   31   40) | Confidence: 0.9992\r\n         Keypoints: LEyes (  97   95) | REyes ( 112   95) | Nose ( 105  102) | LMouth (  99  109) | RMouth ( 111  109)\e[0m\r\n\e[92m  0002 - BBox: ( 358   80   33   43) | Confidence: 0.9967\r\n         Keypoints: LEyes ( 372   97) | REyes ( 385   96) | Nose ( 383  106) | LMouth ( 375  114) | RMouth ( 385  113)\e[0m\r\n\e[36m  0003 - BBox: ( 293  154   43   56) | Confidence: 0.9944\r\n         Keypoints: LEyes ( 305  175) | REyes ( 325  175) | Nose ( 315  186) | LMouth ( 307  195) | RMouth ( 323  195)\e[0m\r\n\e[95m  0004 - BBox: (  69  159   37   47) | Confidence: 0.9916\r\n         Keypoints: LEyes (  85  177) | REyes ( 101  176) | Nose (  97  185) | LMouth (  88  193) | RMouth ( 102  192)\e[0m\r\n\e[92m  0005 - BBox: ( 512   47   37   49) | Confidence: 0.9868\r\n         Keypoints: LEyes ( 516   67) | REyes ( 530   65) | Nose ( 520   76) | LMouth ( 521   85) | RMouth ( 532   83)\e[0m\r\n\e[33m\e[1m======================================================================================================================\e[0m\r\n\r\n"  
+  - delay: 5000
+    content: "exit"
