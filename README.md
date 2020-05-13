@@ -7,10 +7,15 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fdet)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/acnazarejr/fdet)
 [![GitHub](https://img.shields.io/github/license/acnazarejr/fdet)](https://github.com/acnazarejr/fdet/blob/master/LICENSE)
+<<<<<<< HEAD
 
 The `fdet` is an easy to use face detection module based on MTCNN and RetinaFace algorithms.
 
 <img src="https://github.com/acnazarejr/fdet/raw/master/example.jpg" style="width:100%;"/>
+=======
+
+The `fdet` is an easy to use face detection module based on MTCNN and RetinaFace algorithms.
+>>>>>>> 807f720de92bbb0ec82cf6e83a70ab44839b81fc
 
 ## Installation
 
