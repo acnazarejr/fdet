@@ -1,27 +1,31 @@
 # FDet - Deep Learning Face Detection
 
-![Build](https://github.com/acnazarejr/fdet/workflows/Build/badge.svg)
+[![Build](https://github.com/acnazarejr/fdet/workflows/Build/badge.svg)](https://github.com/acnazarejr/fdet/actions)
 [![CodeFactor](https://www.codefactor.io/repository/github/acnazarejr/fdet/badge)](https://www.codefactor.io/repository/github/acnazarejr/fdet)
 [![codecov](https://codecov.io/gh/acnazarejr/fdet/branch/master/graph/badge.svg)](https://codecov.io/gh/acnazarejr/fdet)
-![PyPI](https://img.shields.io/pypi/v/fdet)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fdet)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/acnazarejr/fdet)
+[![Platform](https://img.shields.io/badge/os-linux%20%7C%20win%20%7C%20mac-blue)](https://pypi.org/project/fdet/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/fdet)](https://pypi.org/project/fdet/)
+[![PyPI](https://img.shields.io/pypi/v/fdet)](https://pypi.org/project/fdet/)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/acnazarejr/fdet)](https://github.com/acnazarejr/fdet/releases)
 [![GitHub](https://img.shields.io/github/license/acnazarejr/fdet)](https://github.com/acnazarejr/fdet/blob/master/LICENSE)
 
 The `fdet` is a ready-to-use implementation of deep learning face detectors using PyTorch.
 
 ![Example](https://github.com/acnazarejr/fdet/raw/master/assets/example.jpg)
 
-You can use it in two ways: Directly in your code, as a [python library](#python-library-usage) or by [command-line](#command-line-usage):
+You can use it directly in your code, as a [python library](#python-library-usage):
 
 ```python
 >>> from fdet import io, RetinaFace
+
 >>> detector = RetinaFace(backbone='RESNET50')
 >>> detector.detect(io.read_as_rgb('path_to_image.jpg'))
 [{'box': [511, 47, 35, 45], 'confidence': 0.9999996423721313,
   'keypoints': {'left_eye': [517, 70], 'right_eye': [530, 65], 'nose': [520, 77],
                 'mouth_left': [522, 87], 'mouth_right': [531, 83]}}]
 ```
+
+Or through [command-line](#command-line-usage) application:
 
 ```bash
 fdet retinaface -b RESNET50 -i path_to_image.jpg -o detections.json
@@ -33,17 +37,17 @@ Currently, there are two different detectors available on FDet:
 
 - **MTCNN** - Joint face detection and alignment using multitask cascaded convolutional networks [[zhang:2016]](#references)
 - **RetinaFace** - Single-stage dense face localisation in the wild. [[deng:2019]](#references). You can use it with two different backbones:
-  - MobileNet: Fast and light-weighted model (achieves high FPS)
-  - Resnet50: A medium-size model for better results, but slower.
+  - *MobileNet*: Fast and light-weighted model (achieves high FPS)
+  - *Resnet50*: A medium-size model for better results, but slower.
 
 Despite the availability of different implementations of these algorithms, there are some disadvantages we found when using them. So we create this project to offer the following features, in one package:
 
 - :star: Real-time face detection;
-- :star: Support for batch detection (useful for fast detection of multiple images and videos);
+- :star: Support for batch detection (useful for fast detection in multiple images and videos);
 - :star: Ease of use through python library or command-line app;
 - :star: Provide a unified interface to assign 'CPU' or 'GPU' devices;
 - :star: Multiple GPU's support;
-- :star: On-demand and automatic model weights download;
+- :star: Automatic on-demand model weights download;
 - :star: Compatible with Windows, Linux, and macOS systems.
 
 ## **Installation**
@@ -59,10 +63,6 @@ pip install fdet
 ## **Python Library Usage**
 
 If you want to use `fdet` from python, just import it,
-
-```python
-import fdet
-```
 
 ```python
 from  fdet import MTCNN, RetinaFace
@@ -85,8 +85,9 @@ and instantiate your desired detector, with its respective parameters:
   - `cuda_enable` (bool, optional): Indicates wheter CUDA, if available, should be used or not. If False, uses only CPU processing. [default: True].
   - `cuda_devices` (list, optional): List of CUDA GPUs to be used. If None, uses all avaliable GPUs. [default: None]. If `cuda_enable` is False, this parameter is ignored.
 
+The detector classes listed above have two methods to perform the face detection:
 
-### **Singe-Image Detection**
+### **Singe-Image Detection Example**
 
 The following example illustrates the ease of use of this library to detect faces in a single-image using MTCNN and to create an output image with all detected faces drawn.
 
@@ -120,7 +121,7 @@ image = cv2.imread('example.jpg', cv2.IMREAD_COLOR)
 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 ```
 
-### **Batch Detection**
+### **Batch Detection Example**
 
 The library is also capable of performing face detection on image batches, typically providing considerable speed-up. A batch should be structured as list of images (`numpy` arrays)  of equal dimension. The returned detections list will have an additional first dimension corresponding to the batch size. Each image in the batch may have one or more faces detected.
 
