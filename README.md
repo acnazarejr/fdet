@@ -8,9 +8,9 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/acnazarejr/fdet)
 [![GitHub](https://img.shields.io/github/license/acnazarejr/fdet)](https://github.com/acnazarejr/fdet/blob/master/LICENSE)
 
-The `fdet` is a ready-to-use implementation of deep learning face detectors for PyTorch in Python 3.5 or higher.
+The `fdet` is a ready-to-use implementation of deep learning face detectors using PyTorch.
 
-![Example](https://github.com/acnazarejr/fdet/raw/master/example.jpg)
+![Example](https://github.com/acnazarejr/fdet/raw/master/assets/example.jpg)
 
 ## Features
 
@@ -22,30 +22,35 @@ Currently, there are two different detectors available on FDet:
 Despite the availability of different implementations of these algorithms, there are some disadvantages we found when using them. So we create this project to offer the following features, in one package:
 
 - Real-time face detection;
-- Support to batch detection (useful for fast detection of multiple images and videos);
+- Support for batch detection (useful for fast detection of multiple images and videos);
 - Ease of use through python library or command-line app;
 - Provide a unified interface to assign 'CPU' or 'GPU' devices;
 - Multiple GPU's support;
-- On-demand and automatic model weights download.
+- On-demand and automatic model weights download;
+- Compatible with Windows, Linux, and macOS systems.
 
 ## Installation
 
-1. **This implementation requires PyTorch**. If this is the first time you use PyTorch, please install it in your environment following the [oficial instructions](https://pytorch.org/get-started/locally/).
+1. You need to [install PyTorch](https://pytorch.org/get-started/locally/) first (if you have a GPU, install PyTorch with CUDA support).
 
-2. After install pytorch, `fdet` can be installed through pip:
+2. Then `fdet` can be installed through pip:
 
 ```bash
 pip install fdet
 ```
 
-> The current version works on Windows, Linux and MacOs systems with python 3.5 or higher.
-
 ## Quick Start
+
+You can use it in two ways:
+
+### Python Library
 
 ```python
 >> from fdet import io, RetinaFace
 
->> image = io.read_as_rgb('path_to_image.jpg')
+>> image = io.read_as_rgb('example.jpg')
+>> #or: image = cv2.imread('example.jpg', cv2.IMREAD_COLOR)
+>> #    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 >> detector = RetinaFace(backbone='MOBILENET')
 >> detector.detect(image)
 [{'box': [511, 47, 35, 45],
@@ -57,6 +62,10 @@ pip install fdet
                 'right_eye': [530, 65]}}]
 ```
 
+### Command-line
+
+![Example](https://github.com/acnazarejr/fdet/raw/master/assets/terminal.gif)
+
 ## Credits
 
 The FDet was written heavily inspired by the other available implementations ([see credits](#credits)).
@@ -64,6 +73,8 @@ The FDet was written heavily inspired by the other available implementations ([s
 - [TropComplique/mtcnn-pytorch](https://github.com/TropComplique/mtcnn-pytorch/)
 - [biubug6/Pytorch_Retinaface](https://github.com/biubug6/Pytorch_Retinaface)
 - [ipazc/mtcnn](https://github.com/ipazc/mtcnn)
+
+The current MTCNN version was implemented with the help of [Davi Beltrão](@Davibeltrao).
 
 ## References
 
