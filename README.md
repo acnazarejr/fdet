@@ -66,13 +66,20 @@ import fdet
 
 and instantiate your desired detector, with its respective parameters:
 
-- **MTCNN**
-  - min_face_size (float, optional):
-    - The minimum size of the face to detect. Defaults to 20.0.
+```python
+fdet.MTCNN(min_face_size, thresholds, nms_thresholds, cuda_enable, cuda_devices, cuda_benchmark)
+```
 
+```python
+fdet.MTCNN(min_face_size = 20.0, thresholds = (0.6, 0.7, 0.8), nms_thresholds=(0.7, 0.7, 0.7),
+           cuda_enable=True, cuda_devices=None, cuda_benchmark=True)
+```
 
-    thresholds (Tuple[float, float, float], optional): The thresholds fo each MTCNN step.
-        Defaults to (0.6, 0.7, 0.8).
+`fdet.MTCNN(min_face_size, thresholds, nms_thresholds, cuda_enable, cuda_devices, cuda_benchmark)`
+
+- `min_face_size` (float, optional): The minimum size of the face to detect. [default: 20.0].
+- `thresholds` (tuple, optional): The thresholds fo each MTCNN step. [default: (0.6, 0.7, 0.8)]
+
     nms_thresholds (Tuple[float, float, float], optional): The NMS thresholds fo each MTCNN
         step. Defaults to (0.7, 0.7, 0.7).
     cuda_enable (bool, optional): Indicates if cuda should be used. Defaults to
@@ -82,10 +89,7 @@ and instantiate your desired detector, with its respective parameters:
     cuda_benchmark (bool, optional): [description]. Indicates if the cuda_benchmark is
         enable or not. Defaults to True.
 
-```python
-fdet.MTCNN(min_face_size = 20.0, thresholds = (0.6, 0.7, 0.8), nms_thresholds=(0.7, 0.7, 0.7),
-           cuda_enable=True, cuda_devices=None, cuda_benchmark=True)
-```
+
 
 
 
