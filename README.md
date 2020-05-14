@@ -29,6 +29,8 @@ Despite the availability of different implementations of these algorithms, there
 - On-demand and automatic model weights download;
 - Compatible with Windows, Linux, and macOS systems.
 
+You can use it in two ways: Directly in your code, as a Python Library, or by command-line.
+
 ## Installation
 
 1. You need to [install PyTorch](https://pytorch.org/get-started/locally/) first (if you have a GPU, install PyTorch with CUDA support).
@@ -39,27 +41,63 @@ Despite the availability of different implementations of these algorithms, there
 pip install fdet
 ```
 
-## Quick Start
+## Python Library Usage
 
-You can use it in two ways:
+If you want to use `fdet` from python, just import it.
 
-### Python Library
+```python
+import fdet
+```
+
+You can use the library for single-image or batch detection.
+
+### Singe-Image Detection
+
+The following example illustrates the ease of use of this library to detect single images:
+
+```python
+>> detector = RetinaFace(backbone='MOBILENET', cuda_devices=[0,1])
+>>
+>> image = io.read_as_rgb('example.jpg')
+>>
+>> detector.detect(image)
+[{'box': [511, 47, 35, 45], 'confidence': 0.9999996423721313,
+  'keypoints': {'left_eye': [517, 70], 'right_eye': [530, 65], 'nose': [520, 77],
+                'mouth_left': [522, 87], 'mouth_right': [531, 83]}}]
+```
+
+The detector returns a list of `dict` objects. Each `dict` contains three main keys:
+
+- `'box'`: The bounding box formatted as a list `[x, y, width, height]`;
+- `'confidence'`: The probability for a bounding box to be matching a face;
+- `'keypoints'`:
+The five landmarks formatted into a `dict` with the keys `'left_eye'`, `'right_eye'`, `'nose'`, `'mouth_left'`, `'mouth_right'`. Each keypoint is identified by a pixel position `[x, y]`.
+
+The `io.read_as_rgb()` is a wrapper for opencv `cv2.imread()` to ensure an RGB image and can be replaced by:
+
+```python
+image = cv2.imread('example.jpg', cv2.IMREAD_COLOR)
+image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+```
+
+### Batch Detection
+
+The library is also capable of performing face detection on image batches, typically providing considerable speed-up. A batch should be structured as list of images (`numpy` arrays)  of equal dimension. The returned detections list will have an additional first dimension corresponding to the batch size. Each image in the batch may have one or more faces detected.
+
+In the following example, we detect faces in every frame of a video:
 
 ```python
 >> from fdet import io, RetinaFace
-
+>>
+>> detector = RetinaFace(backbone='MOBILENET', cuda_devices=[0,1])
+>>
 >> image = io.read_as_rgb('example.jpg')
->> #or: image = cv2.imread('example.jpg', cv2.IMREAD_COLOR)
->> #    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
->> detector = RetinaFace(backbone='MOBILENET')
+>> #or: image = cv2.cvtColor(cv2.imread('example.jpg', cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)
+>>
 >> detector.detect(image)
-[{'box': [511, 47, 35, 45],
-  'confidence': 0.9999996423721313,
-  'keypoints': {'left_eye': [517, 70],
-                'mouth_left': [522, 87],
-                'mouth_right': [531, 83],
-                'nose': [520, 77],
-                'right_eye': [530, 65]}}]
+[{'box': [511, 47, 35, 45], 'confidence': 0.9999996423721313,
+  'keypoints': {'left_eye': [517, 70], 'right_eye': [530, 65], 'nose': [520, 77],
+                'mouth_left': [522, 87], 'mouth_right': [531, 83]}}]
 ```
 
 ### Command-line
