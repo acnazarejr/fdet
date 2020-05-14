@@ -64,31 +64,26 @@ If you want to use `fdet` from python, just import it,
 import fdet
 ```
 
+```python
+from  fdet import MTCNN, RetinaFace
+```
+
 and instantiate your desired detector, with its respective parameters:
 
-```python
-fdet.MTCNN(min_face_size, thresholds, nms_thresholds, cuda_enable, cuda_devices, cuda_benchmark)
-```
+- **`MTCNN(thresholds, nms_thresholds, min_face_size, cuda_enable, cuda_devices)`**
+  - `thresholds` (tuple, optional): The thresholds fo each MTCNN step [default: (0.6, 0.7, 0.8)]
+  - `nms_thresholds` (tuple, optional): The NMS thresholds fo each MTCNN step [default: (0.7, 0.7, 0.7)]
+  - `min_face_size` (float, optional): The minimum size of the face to detect, in pixels [default: 20.0].
+  - `cuda_enable` (bool, optional): Indicates wheter CUDA, if available, should be used or not. If False, uses only CPU processing [default: True].
+  - `cuda_devices` (list, optional): List of CUDA GPUs to be used. If None, uses all avaliable GPUs [default: None]. If `cuda_enable` is False, this parameter is ignored.
 
-```python
-fdet.MTCNN(min_face_size = 20.0, thresholds = (0.6, 0.7, 0.8), nms_thresholds=(0.7, 0.7, 0.7),
-           cuda_enable=True, cuda_devices=None, cuda_benchmark=True)
-```
-
-- **`fdet.MTCNN(min_face_size, thresholds, nms_thresholds, cuda_enable, cuda_devices, cuda_benchmark)`**
-  - `min_face_size` (float, optional): The minimum size of the face to detect. [default: 20.0].
-  - `thresholds` (tuple, optional): The thresholds fo each MTCNN step. [default: (0.6, 0.7, 0.8)]
-  - `nms_thresholds` (tuple, optional): The NMS thresholds fo each MTCNN step. [default: (0.7, 0.7, 0.7)]
-
-    cuda_enable (bool, optional): Indicates if cuda should be used. Defaults to
-        cuda.is_available().
-    cuda_devices (Optional[List[int]], optional): CUDA GPUs to be used. If None, uses all
-        avaliable GPUs. Defaults to None.
-    cuda_benchmark (bool, optional): [description]. Indicates if the cuda_benchmark is
-        enable or not. Defaults to True.
-
-
-
+- **`RetinaFace(backbone, threshold, nms_threshold, max_face_size, cuda_enable, cuda_devices)`**
+  - `backbone` (str): The backbone model [`'RESNET50'` or `'MOBILENET'`].
+  - `threshold` (tuple, optional): The detection threshold [default: 0.8]
+  - `nms_threshold` (tuple, optional): The NMS threshold [default: 0.4]
+  - `max_face_size` (int, optional): The maximum size of the face to detect, in pixels [default: 1000].
+  - `cuda_enable` (bool, optional): Indicates wheter CUDA, if available, should be used or not. If False, uses only CPU processing. [default: True].
+  - `cuda_devices` (list, optional): List of CUDA GPUs to be used. If None, uses all avaliable GPUs. [default: None]. If `cuda_enable` is False, this parameter is ignored.
 
 
 ### **Singe-Image Detection**
