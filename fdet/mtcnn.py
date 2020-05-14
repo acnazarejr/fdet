@@ -27,9 +27,9 @@ class MTCNN(Detector):
     - https://github.com/ipazc/mtcnn
     """
 
-    def __init__(self, min_face_size: float = 20.0,
-                 thresholds: Tuple[float, float, float] = (0.6, 0.7, 0.8),
+    def __init__(self, thresholds: Tuple[float, float, float] = (0.6, 0.7, 0.8),
                  nms_thresholds: Tuple[float, float, float] = (0.7, 0.7, 0.7),
+                 min_face_size: float = 20.0,
                  cuda_enable: bool = torch.cuda.is_available(),
                  cuda_devices: Optional[Sequence[int]] = None, cuda_benchmark: bool = True) -> None:
         """Initializes the MTCNN detector.
