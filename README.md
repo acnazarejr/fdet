@@ -38,13 +38,13 @@ Currently, there are two different detectors available on FDet:
 
 Despite the availability of different implementations of these algorithms, there are some disadvantages we found when using them. So we create this project to offer the following features, in one package:
 
-- :stars: Real-time face detection;
-- Support for batch detection (useful for fast detection of multiple images and videos);
-- Ease of use through python library or command-line app;
-- Provide a unified interface to assign 'CPU' or 'GPU' devices;
-- Multiple GPU's support;
-- On-demand and automatic model weights download;
-- Compatible with Windows, Linux, and macOS systems.
+- :star: Real-time face detection;
+- :star: Support for batch detection (useful for fast detection of multiple images and videos);
+- :star: Ease of use through python library or command-line app;
+- :star: Provide a unified interface to assign 'CPU' or 'GPU' devices;
+- :star: Multiple GPU's support;
+- :star: On-demand and automatic model weights download;
+- :star: Compatible with Windows, Linux, and macOS systems.
 
 ## **Installation**
 
