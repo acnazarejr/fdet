@@ -75,13 +75,11 @@ fdet.MTCNN(min_face_size = 20.0, thresholds = (0.6, 0.7, 0.8), nms_thresholds=(0
            cuda_enable=True, cuda_devices=None, cuda_benchmark=True)
 ```
 
-**`fdet.MTCNN(min_face_size, thresholds, nms_thresholds, cuda_enable, cuda_devices, cuda_benchmark)`**
+- **`fdet.MTCNN(min_face_size, thresholds, nms_thresholds, cuda_enable, cuda_devices, cuda_benchmark)`**
+  - `min_face_size` (float, optional): The minimum size of the face to detect. [default: 20.0].
+  - `thresholds` (tuple, optional): The thresholds fo each MTCNN step. [default: (0.6, 0.7, 0.8)]
+  - `nms_thresholds` (tuple, optional): The NMS thresholds fo each MTCNN step. [default: (0.7, 0.7, 0.7)]
 
-- `min_face_size` (float, optional): The minimum size of the face to detect. [default: 20.0].
-- `thresholds` (tuple, optional): The thresholds fo each MTCNN step. [default: (0.6, 0.7, 0.8)]
-
-    nms_thresholds (Tuple[float, float, float], optional): The NMS thresholds fo each MTCNN
-        step. Defaults to (0.7, 0.7, 0.7).
     cuda_enable (bool, optional): Indicates if cuda should be used. Defaults to
         cuda.is_available().
     cuda_devices (Optional[List[int]], optional): CUDA GPUs to be used. If None, uses all
