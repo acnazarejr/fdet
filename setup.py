@@ -1,6 +1,6 @@
 """The setup script"""
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 AUTHOR = 'Antonio C. Nazare Jr.'
 EMAIL = 'antonio.nazare@dcc.ufmg.br'
@@ -42,7 +42,7 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',  # This is important!
     keywords='face recognition detection biometry',
-    packages=['fdet'],
+    packages=find_packages(),
     zip_safe=False,
     python_requires='>=3.5',
     install_requires=[line for line in open('requirements.txt').read().split('\n') if line != ''],

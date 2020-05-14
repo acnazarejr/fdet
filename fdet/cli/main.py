@@ -12,6 +12,17 @@ from tqdm import tqdm
 from fdet.detector import Detector
 import fdet
 
+VALID_IMG_EXTENSTIONS = (
+    '.bmp',
+    '.pbm', '.pgm', '.ppm',
+    '.sr', '.ras',
+    '.jpeg', '.jpg', '.jpe',
+    '.jp2',
+    '.tiff', '.tif',
+    '.png'
+)
+
+
 @click.group()
 @click.version_option(fdet.__version__)
 def main():
@@ -76,6 +87,12 @@ def _common_options(func):
             help='The path of the directory to save output frames, with detections',
             type=click.Path(exists=False, file_okay=False, dir_okay=True, writable=True,
                             readable=False, resolve_path=True, allow_dash=False, path_type=None)
+        ),
+        click.option(
+            '--color', 'draw_color',
+            required=False, default='blue', show_default=True,
+            help='The color of detected faces drawn in output frames.',
+            type=str
         ),
         click.option(
             '-q', '--quiet', is_flag=True, show_default=True, help='Enables quiet mode'
@@ -161,7 +178,8 @@ def _detect(detector: Detector, input_data, kwargs: Dict[str, Any]) -> None:
         for image_key, image_detections, img in zip(batch_keys, batch_detections, batch_images):
             batch_response[image_key] = image_detections
             if kwargs.get('save_frames_dir') is not None:
-                image_output = fdet.io.draw_detections(img, image_detections, color='white',
+                image_output = fdet.io.draw_detections(img, image_detections,
+                                                       color=kwargs.get('draw_color'),
                                                        thickness=3)
                 filename = image_key if isinstance(image_key, str) else str(image_key) + '.png'
                 filename = os.path.join(str(kwargs.get('save_frames_dir')), filename)
@@ -220,8 +238,8 @@ def _detect(detector: Detector, input_data, kwargs: Dict[str, Any]) -> None:
 
 def _process_input(kwargs) -> Iterable[Tuple[Hashable, Union[str, np.ndarray]]]:
 
-    input_options = [kwargs['image_file'], kwargs['video_file'],
-                     kwargs['images_list'], kwargs['images_dir']]
+    input_options = [kwargs.get('image_file'), kwargs.get('video_file'),
+                     kwargs.get('images_list'), kwargs.get('images_dir')]
     not_none_sum = sum(1 for _ in filter(None.__ne__, input_options))
 
     if not_none_sum == 0:
@@ -240,16 +258,20 @@ def _process_input(kwargs) -> Iterable[Tuple[Hashable, Union[str, np.ndarray]]]:
         error_msg += "'-i' / '--image'\n"
         raise click.UsageError(error_msg)
 
-    if kwargs['image_file'] is not None and kwargs['image_file']:
-        return [(os.path.basename(ifile), ifile) for ifile in kwargs['image_file']]
-    if kwargs['video_file'] is not None:
-        return fdet.io.VideoHandle(kwargs['video_file'])
-    if kwargs['images_list'] is not None:
+    if kwargs.get('image_file') is not None and kwargs.get('image_file'):
+        return [(os.path.basename(ifile), ifile) for ifile in kwargs.get('image_file')]
+    if kwargs.get('video_file') is not None:
+        return fdet.io.VideoHandle(kwargs.get('video_file'))
+    if kwargs.get('images_list') is not None:
         return [
             (os.path.basename(ifile), ifile)
-            for ifile in open(kwargs['images_list'], 'r').read().splitlines()
+            for ifile in open(kwargs.get('images_list'), 'r').read().splitlines()
         ]
-    return [
-        (ifile, os.path.join(kwargs['images_dir'], ifile))
-        for ifile in os.listdir(kwargs['images_dir'])
-    ]
+
+    #kwargs.get('images_dir') is not None:
+    list_of_valid_files = list()
+    for ifile in os.listdir(kwargs.get('images_dir')):
+        image_path = os.path.join(kwargs.get('images_dir'), ifile)
+        if os.path.splitext(image_path)[1] in VALID_IMG_EXTENSTIONS:
+            list_of_valid_files.append((ifile, image_path))
+    return list_of_valid_files
