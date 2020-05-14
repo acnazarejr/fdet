@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 AUTHOR = 'Antonio C. Nazare Jr.'
 EMAIL = 'antonio.nazare@dcc.ufmg.br'
-VERSION = '0.2.0'
+VERSION = '0.2.1'
 
 setup(
     name='fdet',
