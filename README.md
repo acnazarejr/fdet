@@ -9,7 +9,7 @@
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/acnazarejr/fdet)](https://github.com/acnazarejr/fdet/releases)
 [![GitHub](https://img.shields.io/github/license/acnazarejr/fdet)](https://github.com/acnazarejr/fdet/blob/master/LICENSE)
 
-The `fdet` is a ready-to-use implementation of deep learning face detectors using PyTorch.
+The `fdet` is a ready-to-use implementation of deep learning face detectors with landkmarks.
 
 ![Example](https://github.com/acnazarejr/fdet/raw/master/assets/example.jpg)
 
@@ -19,7 +19,8 @@ You can use it directly in your code, as a [python library](#python-library-usag
 >>> from fdet import io, RetinaFace
 
 >>> detector = RetinaFace(backbone='RESNET50')
->>> detector.detect(io.read_as_rgb('path_to_image.jpg'))
+>>> image = io.read_as_rgb('path_to_image.jpg')
+>>> detector.detect(image)
 [{'box': [511, 47, 35, 45], 'confidence': 0.9999996423721313,
   'keypoints': {'left_eye': [517, 70], 'right_eye': [530, 65], 'nose': [520, 77],
                 'mouth_left': [522, 87], 'mouth_right': [531, 83]}}]
@@ -28,7 +29,7 @@ You can use it directly in your code, as a [python library](#python-library-usag
 Or through [command-line](#command-line-usage) application:
 
 ```bash
-fdet retinaface -b RESNET50 -i path_to_image.jpg -o detections.json
+fdet retinaface -b RESNET50 -i path_to_image.jpg -o detections.json --gpu 1
 ```
 
 ## **Features**
@@ -44,7 +45,7 @@ Despite the availability of different implementations of these algorithms, there
 
 - :star: Real-time face detection;
 - :star: Support for batch detection (useful for fast detection in multiple images and videos);
-- :star: Ease of use through python library or command-line app;
+- :star: Ease of use through python library or command-line tool;
 - :star: Provide a unified interface to assign 'CPU' or 'GPU' devices;
 - :star: Multiple GPU's support;
 - :star: Automatic on-demand model weights download;
@@ -59,6 +60,42 @@ Despite the availability of different implementations of these algorithms, there
 ```bash
 pip install fdet
 ```
+
+## **Command-line Usage**
+
+Simply and fast usage through command-line tool.
+
+The **`fdet`** command-line tool has two sub-commands, on for each available detector: **`fdet mtcnn`** and **`fdet retinaface`**.
+
+![Terminal](https://github.com/acnazarejr/fdet/raw/master/assets/terminal.gif)
+
+### **Options**
+
+For a detailed list of available options type: **`fdet mtcnn --help`** or **`fdet retinaface --help`**, according to the desired detector.
+
+#### Data Input
+
+> This options are mutually exclusive
+
+- `-i, --image FILE`: Image to detect. You can specify multiple images (`-i img1.jpg -i img2.jpg`)
+- `-v, --video FILE`: Video file to detect. Only one video can be specified at a time.
+- `-l, --list FILE`: Text file containing a list of images (absolute paths) to detect.
+- `-d, --dir DIRECTORY`: The path of a directory containing images to detect. Ignores files that are not images.
+
+#### Data Output
+
+- `-o, --output FILE`: Path to the output json file containing the detections.
+- `-s, --save-frimes DIRECTORY` *(Optional)*: If specified, folder to save the output images with the detected faces drawn. Be careful when using this option with video input, as it will save all frames of the video.
+- `p, --print` *(Optional)*: If specified,, print the detections to the console screen.
+- `-q, --quiet` *(Optional)*: Do not display progress bar or any results.
+
+#### Execution
+
+- `--no-cuda`: Disables the CUDA utilization. When CUDA is not supported, it is automatically disabled.
+- `-g, --GPU INT` *(Optional)*: When CUDA is supported, specifies which GPU to use. If not set, all available GPUs will be used.
+- `-bs, --batch-size INT` *(Optional)*: The size of the detection batch (providing considerable speed-up) [default: 1]. **This option only works for multiple images when they are the same size**.
+
+> Defining the batch size is a complex task because it depends on the available memory in the system. We recommend performing small preliminary tests to find a suitable value.
 
 ## **Python Library Usage**
 
@@ -85,45 +122,54 @@ and instantiate your desired detector, with its respective parameters:
   - `cuda_enable` (bool, optional): Indicates wheter CUDA, if available, should be used or not. If False, uses only CPU processing. [default: True].
   - `cuda_devices` (list, optional): List of CUDA GPUs to be used. If None, uses all avaliable GPUs. [default: None]. If `cuda_enable` is False, this parameter is ignored.
 
-The detector classes listed above have two methods to perform the face detection:
+To perform detection you can simply use the following methods provided by the classes:
+
+**`detect(image: np.ndarray)`**: Single-image detection ([example](#singe-image-detection-example)).
+
+**`batch_detect(image: np.ndarray)`**: Performs face detection on image batches, typically providing considerable speed-up ([example](#batch-detection-example)).
+
+For each processed image, the detector returns a list of `dict` objects, which in turn represent the detected faces. The `dict` contains three main keys, described below.
+
+```python
+[
+  {'box': [511, 47, 35, 45], 'confidence': 0.9999996423721313,
+  'keypoints': {'left_eye': [517, 70], 'right_eye': [530, 65], 'nose': [520, 77],
+                'mouth_left': [522, 87], 'mouth_right': [531, 83]}}
+]
+```
+
+- `'box'`: The bounding box formatted as a list `[x, y, width, height]`;
+- `'confidence'`: The probability for a bounding box to be matching a face;
+- `'keypoints'`: The five landmarks formatted into a `dict` with the keys `'left_eye'`, `'right_eye'`, `'nose'`, `'mouth_left'`, `'mouth_right'`. Each keypoint is identified by a pixel position `[x, y]`.
+
+> The `batch_detect()` method will return a `list` of `lists` containing the results of all batch images.
 
 ### **Singe-Image Detection Example**
 
-The following example illustrates the ease of use of this library to detect faces in a single-image using MTCNN and to create an output image with all detected faces drawn.
+This example shows how to detect faces, using a single image, and draw the detections in an output image.
 
 ```python
 >>> from fdet import io, MTCNN
 >>>
 >>> detector = MTCNN()
->>> image = io.read_as_rgb('example.jpg')
 >>>
+>>> image = io.read_as_rgb('example.jpg')
 >>> detections = detector.detect(image)
->>> print(detections)
-[{'box': [511, 47, 35, 45], 'confidence': 0.9999996423721313,
-  'keypoints': {'left_eye': [517, 70], 'right_eye': [530, 65], 'nose': [520, 77],
-                'mouth_left': [522, 87], 'mouth_right': [531, 83]}}]
 >>>
 >>> output_image = io.draw_detections(image, detections, color='white', thickness=5)
 >>> io.save('output.jpg', output_image)
 ```
 
-The detector returns a list of `dict` objects. Each `dict` contains three main keys:
-
-- `'box'`: The bounding box formatted as a list `[x, y, width, height]`;
-- `'confidence'`: The probability for a bounding box to be matching a face;
-- `'keypoints'`:
-The five landmarks formatted into a `dict` with the keys `'left_eye'`, `'right_eye'`, `'nose'`, `'mouth_left'`, `'mouth_right'`. Each keypoint is identified by a pixel position `[x, y]`.
-
-The `io.read_as_rgb()` is a wrapper for opencv `cv2.imread()` to ensure an RGB image and can be replaced by:
-
-```python
-image = cv2.imread('example.jpg', cv2.IMREAD_COLOR)
-image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-```
+> The `io.read_as_rgb()` is a wrapper for opencv `cv2.imread()` to ensure an RGB image and can be replaced by:
+>
+> ```python
+> image = cv2.imread('example.jpg', cv2.IMREAD_COLOR)
+> image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+> ```
 
 ### **Batch Detection Example**
 
-The library is also capable of performing face detection on image batches, typically providing considerable speed-up. A batch should be structured as list of images (`numpy` arrays)  of equal dimension. The returned detections list will have an additional first dimension corresponding to the batch size. Each image in the batch may have one or more faces detected.
+A batch should be structured as list of images (`numpy` arrays)  of equal dimension. The returned detections list will have an additional first dimension corresponding to the batch size. Each image in the batch may have one or more faces detected.
 
 In the following example, we detect faces in every frame of a video using batchs of 10 images.
 
@@ -157,10 +203,6 @@ In the following example, we detect faces in every frame of a video using batchs
 >>>     batch_detections = detector.batch_detect(image_buffer)
 >>>     video_face_detections.extend(batch_detections)
 ```
-
-## **Command-line Usage**
-
-![Terminal](https://github.com/acnazarejr/fdet/raw/master/assets/terminal.gif)
 
 ## Credits
 

@@ -206,7 +206,7 @@ def _detect(detector: Detector, input_data, kwargs: Dict[str, Any]) -> None:
     if batch:
         detections.update(__process_batch(batch))
 
-    if kwargs.get('print'):
+    if kwargs.get('print') and not kwargs.get('quiet'):
         for image_key, image_detections in detections.items():
             filename = image_key if isinstance(image_key, str) else 'frame ' + str(image_key)
             msg = click.style('Detected faces on {}: '.format(filename),
