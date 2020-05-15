@@ -92,13 +92,18 @@ def _draw_detection(image: np.ndarray, detection: Dict[str, Any],
                     color: Union[Color, str, tuple] = Color('red'),
                     thickness: int = None) -> np.ndarray:
     """draw_detection"""
+
+    if thickness is None:
+        thickness = max(int(min(image.shape[0], image.shape[1])/100), 2)
+
     image = _draw_bbox(image, detection['box'], color=color, thickness=thickness)
-    image = _draw_points(image, detection['keypoints'].values(), color=color, thickness=thickness)
+    image = _draw_points(image, detection['keypoints'].values(), color=color,
+                         thickness=thickness + 1)
     return image
 
 def draw_detections(image: Union[np.ndarray, str], detections: List[Dict[str, Any]],
                     color: Union[Color, str, tuple] = Color('red'),
-                    thickness: int = 2) -> np.ndarray:
+                    thickness: int = 3) -> np.ndarray:
     """draw_detections"""
     if isinstance(image, str):
         image = read_as_rgb(image)
