@@ -37,7 +37,7 @@ class RetinaFace(Detector):
         return ['RESNET50', 'MOBILENET']
 
     def __init__(self, backbone: str, threshold: float = 0.8,
-                 nms_threshold: float = 0.4, max_face_size: int = 1000,
+                 nms_threshold: float = 0.4, max_size: int = None,
                  cuda_enable: bool = torch.cuda.is_available(),
                  cuda_devices: Optional[Sequence[int]] = None, cuda_benchmark: bool = True) -> None:
         """Initializes the MTCNN detector.
@@ -47,12 +47,12 @@ class RetinaFace(Detector):
                 'RESNET50'.
             threshold (float, optional): The detection threshold. Defaults to 0.8.
             nms_threshold (float, optional): The nms threshold. Defaults to 0.4.
-            max_face_size (int, optional): [description]. Defaults to 1000.
+            max_size (int, optional): Max image size. Defaults to None.
             cuda_enable (bool, optional): Indicates if cuda should be used. Defaults to
                 cuda.is_available().
             cuda_devices (Optional[List[int]], optional): CUDA GPUs to be used. If None, uses all
                 avaliable GPUs. Defaults to None.
-            cuda_benchmark (bool, optional): [description]. Indicates if the cuda_benchmark is
+            cuda_benchmark (bool, optional): Indicates if the cuda_benchmark is
                 enable or not. Defaults to True.
         """
 
@@ -71,9 +71,7 @@ class RetinaFace(Detector):
             raise DetectorValueError('The nms_threshold value must be between 0 and 1.')
         self._nms_threshold = nms_threshold
 
-        if max_face_size < 100 or max_face_size > 1000:
-            raise DetectorValueError('The max_face_size argument must be between 100 and 1000.')
-        self._max_face_size = max_face_size
+        self._max_size = max_size
 
         torch.cuda.manual_seed(1137) # type: ignore
         torch.backends.cudnn.enabled = cuda_enable # type: ignore
@@ -85,15 +83,20 @@ class RetinaFace(Detector):
         _, im_height, im_width, _ = data.shape
         max_axis = max(im_height, im_width)
         rescale = 1
-        if max_axis > self._max_face_size:
-            rescale = self._max_face_size/max_axis
+        if self._max_size is not None and max_axis > self._max_size:
+            rescale = self._max_size/max_axis
             data = np.asarray([_image_rescale(image, rescale) for image in data])
 
         _, im_height, im_width, _ = data.shape
-        images_np = np.asarray([np.float32(cv2.cvtColor(img, cv2.COLOR_RGB2BGR)) for img in data])
-        images_np -= (104, 117, 123)
-        images_np = images_np.transpose(0, 3, 1, 2)
-        images_torch = torch.from_numpy(images_np)
+        # images_np = np.asarray([np.float32(cv2.cvtColor(img, cv2.COLOR_RGB2BGR)) for img in data])
+        # images_np -= (104, 117, 123)
+        # images_np = images_np.transpose(0, 3, 1, 2)
+        # images_torch = torch.from_numpy(images_np)
+        images_np = data[:, :, :, ::-1].copy()
+        images_torch = torch.from_numpy(images_np).float()
+        images_torch = images_torch - torch.Tensor((104, 117, 123)) #type: ignore
+        images_torch = images_torch.permute(0, 3, 1, 2)
+
         images_torch = images_torch.to(self._device_control)
 
         scale_loc = torch.Tensor([im_width, im_height]).repeat(2) #type: ignore

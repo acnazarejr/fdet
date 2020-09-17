@@ -57,8 +57,9 @@ class Detector(ABC):
         Returns:
             List[Dict]: A list containing all the bounding boxes and lankdmarks detected.
         """
-        np_data = self.__check_image(image)
-        batch_detections = self._run_data_batch(np_data)
+        with torch.no_grad():
+            np_data = self.__check_image(image)
+            batch_detections = self._run_data_batch(np_data)
         return batch_detections[0]
 
     def batch_detect(self, image_batch: Union[np.ndarray, Sequence[np.ndarray]]) -> BatchDetOutType:
@@ -73,8 +74,10 @@ class Detector(ABC):
             List[List[Det]]: A list of lists. For each image in the batch, returns a list of all the
                 bounding boxes and lankdmarks detected in the respective image.
         """
-        np_data = self.__check_batch(image_batch)
-        return self._run_data_batch(np_data)
+        with torch.no_grad():
+            np_data = self.__check_batch(image_batch)
+            batch_detections = self._run_data_batch(np_data)
+        return batch_detections
 
 
     @staticmethod
