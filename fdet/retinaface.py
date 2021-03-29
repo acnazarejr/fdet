@@ -155,9 +155,9 @@ class RetinaFace(Detector):
 
         url = ''
         if backbone == 'MOBILENET':
-            url = 'https://www.dropbox.com/s/kr1xjmzry4l8p6g/retinaface_mobilenetv1_final.pt?dl=1'
+            url = 'https://github.com/acnazarejr/fdet/releases/download/weights/retinaface_mobilenetv1_final.pt'
         else: #if backbone == 'RESNET50':
-            url = 'https://www.dropbox.com/s/d0xdha71fwr53uk/retinaface_resnet50_final.pt?dl=1'
+            url = 'https://github.com/acnazarejr/fdet/releases/download/weights/retinaface_resnet50_final.pt'
 
         state_dict = load_state_dict_from_url(url, map_location=self._device_control)
 
